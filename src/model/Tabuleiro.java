@@ -37,11 +37,7 @@ public class Tabuleiro implements LeituraTabuleiro {
         if (linhas <= 0 || colunas <= 0) {
             throw new IllegalArgumentException("Linhas e colunas devem ser maiores que zero.");
         }
-
-        long totalCelulas =
-                (long) linhas * colunas;
-
-        if (numMinas < 0 || numMinas >= totalCelulas) {
+        if (numMinas < 0 || numMinas >= linhas * colunas) {
             throw new IllegalArgumentException("Número de minas inválido para esse tabuleiro.");
         }
 
@@ -76,10 +72,7 @@ public class Tabuleiro implements LeituraTabuleiro {
             throw new IllegalArgumentException("As posições das minas não podem ser nulas.");
         }
 
-        long totalCelulas =
-                (long) linhas * colunas;
-
-        if (posicoesMinas.length >= totalCelulas) {
+        if (posicoesMinas.length >= linhas * colunas) {
             throw new IllegalArgumentException("Número de minas inválido para esse tabuleiro.");
         }
 
