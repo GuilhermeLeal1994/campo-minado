@@ -26,4 +26,10 @@ public interface AcoesJogador {
     /** Disparado quando o jogador solicita ver o top 5. */
     void aoMostrarTop5();
 
+    /** Disparado quando o jogador solicita salvar a partida atual. */
+    void aoSalvarJogo();
+
+    /** Disparado quando o jogador solicita continuar uma partida salva. */
+    void aoContinuarJogo();
+
 }

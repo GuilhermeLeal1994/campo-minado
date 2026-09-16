@@ -2,6 +2,8 @@ package controller;
 
 import model.Tabuleiro;
 import model.Recordes;
+import model.PartidaSalva;
+import model.SalvamentoPartida;
 import view.CampoMinadoView;
 
 import javax.swing.Timer;
@@ -36,6 +38,8 @@ public class CampoMinadoController implements AcoesJogador {
 
     private int dicasUsadas;
 
+    private boolean partidaSalvaAtual;
+
     private static final int MAX_DICAS = 3;
 
     public CampoMinadoController(CampoMinadoView view) {
@@ -44,7 +48,9 @@ public class CampoMinadoController implements AcoesJogador {
     }
 
     public void iniciar() {
-        view.mostrarTelaInicial();
+        view.mostrarTelaInicial(
+                SalvamentoPartida.existe()
+        );
         atualizarRecordesNaView();
         view.setVisible(true);
     }
@@ -65,12 +71,13 @@ public class CampoMinadoController implements AcoesJogador {
         this.totalMinas = minas;
 
         this.totalCelulas =
-                linhas * colunas - minas;
+                (int) ((long) linhas * colunas - minas);
 
         this.celulasReveladas = 0;
         this.jogadas = 0;
         this.jogoIniciado = false;
         this.dicasUsadas = 0;
+        this.partidaSalvaAtual = false;
 
         this.dificuldadeAtual =
                 identificarDificuldade(
@@ -114,7 +121,9 @@ public class CampoMinadoController implements AcoesJogador {
 
         pararTimer();
 
-        view.mostrarTelaInicial();
+        view.mostrarTelaInicial(
+                SalvamentoPartida.existe()
+        );
 
         atualizarRecordesNaView();
     }
@@ -172,6 +181,153 @@ public void aoMostrarTop5() {
             )
     );
 }
+
+    @Override
+    public void aoSalvarJogo() {
+
+        if (tabuleiro == null
+                || tabuleiro.isJogoEncerrado()) {
+            return;
+        }
+
+        long tempoDecorrido =
+                jogoIniciado
+                        ? obterSegundosPassados()
+                        : 0;
+
+        pararTimer();
+
+        PartidaSalva partida =
+                new PartidaSalva(
+                        tabuleiro,
+                        totalMinas,
+                        totalCelulas,
+                        contarCelulasReveladas(),
+                        jogadas,
+                        jogoIniciado,
+                        tempoDecorrido,
+                        limiteSegundos,
+                        dificuldadeAtual,
+                        dicasUsadas
+                );
+
+        try {
+            SalvamentoPartida.salvar(partida);
+
+            view.mostrarMensagemSalvamento(
+                    "Partida salva com sucesso."
+            );
+
+            this.partidaSalvaAtual = true;
+
+            view.mostrarTelaInicial(true);
+            atualizarRecordesNaView();
+
+        } catch (Exception erro) {
+            if (jogoIniciado) {
+                iniciarTimer();
+            }
+
+            view.mostrarMensagemSalvamento(
+                    "Não foi possível salvar a partida: "
+                            + erro.getMessage()
+            );
+        }
+    }
+
+    @Override
+    public void aoContinuarJogo() {
+
+        if (!SalvamentoPartida.existe()) {
+            view.mostrarMensagemSalvamento(
+                    "Nenhuma partida salva foi encontrada."
+            );
+            return;
+        }
+
+        try {
+            PartidaSalva partida =
+                    SalvamentoPartida.carregar();
+
+            restaurarPartida(partida);
+
+        } catch (Exception erro) {
+            try {
+                SalvamentoPartida.excluir();
+            } catch (Exception ignorado) {
+                // Mantém a mensagem original para o jogador.
+            }
+
+            view.mostrarMensagemSalvamento(
+                    "A partida salva é inválida ou não pôde ser carregada."
+            );
+
+            view.mostrarTelaInicial(
+                    SalvamentoPartida.existe()
+            );
+        }
+    }
+
+    private void restaurarPartida(PartidaSalva partida) {
+
+        pararTimer();
+
+        this.tabuleiro = partida.getTabuleiro();
+        this.totalMinas = partida.getTotalMinas();
+        this.totalCelulas = partida.getTotalCelulas();
+        this.celulasReveladas = partida.getCelulasReveladas();
+        this.jogadas = partida.getJogadas();
+        this.jogoIniciado = partida.isJogoIniciado();
+        this.limiteSegundos = partida.getLimiteSegundos();
+        this.dificuldadeAtual = partida.getDificuldadeAtual();
+        this.dicasUsadas = partida.getDicasUsadas();
+        this.partidaSalvaAtual = true;
+
+        long tempoSalvo =
+                Math.max(0, partida.getTempoDecorridoSegundos());
+
+        this.tempoInicio =
+                System.currentTimeMillis()
+                        - tempoSalvo * 1000L;
+
+        view.aplicarTemaSelecionado();
+
+        view.iniciarTelaDeJogo(
+                tabuleiro.getLinhas(),
+                tabuleiro.getColunas(),
+                totalMinas,
+                totalCelulas,
+                limiteSegundos,
+                tabuleiro.getVidasRestantes()
+        );
+
+        for (int linha = 0;
+             linha < tabuleiro.getLinhas();
+             linha++) {
+
+            for (int coluna = 0;
+                 coluna < tabuleiro.getColunas();
+                 coluna++) {
+
+                view.atualizarCelula(
+                        linha,
+                        coluna,
+                        tabuleiro
+                );
+            }
+        }
+
+        atualizarEstatisticasNaView();
+        view.atualizarDicas(
+                dicasUsadas,
+                MAX_DICAS
+        );
+        atualizarTempo();
+
+        if (jogoIniciado && !tabuleiro.isJogoEncerrado()) {
+            iniciarTimer();
+        }
+    }
 
     @Override
     public void aoMarcarCelula(
@@ -557,6 +713,16 @@ private void atualizarRecordesNaView() {
 
         pararTimer();
 
+        if (partidaSalvaAtual) {
+            try {
+                SalvamentoPartida.excluir();
+            } catch (Exception ignorado) {
+                // O resultado da partida não depende da exclusão do salvamento.
+            }
+
+            partidaSalvaAtual = false;
+        }
+
         /*
          * DERROTA
          *
@@ -583,7 +749,8 @@ private void atualizarRecordesNaView() {
          * Só pergunta o nome se o tempo
          * realmente puder entrar no Top 5.
          */
-        if (recordes.podeEntrarNoTop5(
+        if (dificuldadeAtual != null
+                && recordes.podeEntrarNoTop5(
                 dificuldadeAtual,
                 tempoVitoria)) {
 

@@ -1566,6 +1566,10 @@ public class CampoMinadoView extends JFrame {
     // ================================================================
 
     public void mostrarTelaInicial() {
+        mostrarTelaInicial(false);
+    }
+
+    public void mostrarTelaInicial(boolean existePartidaSalva) {
         getContentPane().removeAll();
 
         painelPrincipal =
@@ -1738,6 +1742,37 @@ botaoTop5.addActionListener(
 conteudo.add(
         botaoTop5
 );
+
+        conteudo.add(
+                Box.createVerticalStrut(
+                        12
+                )
+        );
+
+        JButton botaoContinuar =
+                criarBotaoSecundario(
+                        "▶ Continuar jogo"
+                );
+
+        botaoContinuar.setAlignmentX(
+                Component.CENTER_ALIGNMENT
+        );
+
+        botaoContinuar.setEnabled(
+                existePartidaSalva
+        );
+
+        botaoContinuar.addActionListener(
+                e -> {
+                    if (ouvinte != null) {
+                        ouvinte.aoContinuarJogo();
+                    }
+                }
+        );
+
+        conteudo.add(
+                botaoContinuar
+        );
 
         painelPrincipal.add(
                 conteudo,
@@ -3036,6 +3071,59 @@ private JPanel criarColunaTop5(
                 botaoDica
         );
 
+        JButton salvarJogo =
+                new JButton(
+                        "Salvar jogo"
+                );
+
+        salvarJogo.setFont(
+                fontePequena
+        );
+
+        salvarJogo.setForeground(
+                corTextoPrincipal
+        );
+
+        salvarJogo.setBackground(
+                corFundoClaro
+        );
+
+        salvarJogo.setFocusPainted(
+                false
+        );
+
+        salvarJogo.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(
+                                corBorda
+                        ),
+                        BorderFactory.createEmptyBorder(
+                                7,
+                                12,
+                                7,
+                                12
+                        )
+                )
+        );
+
+        salvarJogo.setCursor(
+                new Cursor(
+                        Cursor.HAND_CURSOR
+                )
+        );
+
+        salvarJogo.addActionListener(
+                e -> {
+                    if (ouvinte != null) {
+                        ouvinte.aoSalvarJogo();
+                    }
+                }
+        );
+
+        botoes.add(
+                salvarJogo
+        );
+
         botoes.add(
                 telaCheiaBotao
         );
@@ -4240,6 +4328,17 @@ public String solicitarNomeJogador() {
     }
 
     return nome.trim();
+}
+
+public void mostrarMensagemSalvamento(
+        String mensagem
+) {
+    JOptionPane.showMessageDialog(
+            this,
+            mensagem,
+            "Salvar / Continuar jogo",
+            JOptionPane.INFORMATION_MESSAGE
+    );
 }
 
 public void mostrarDerrota() {
