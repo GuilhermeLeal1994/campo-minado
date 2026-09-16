@@ -19,4 +19,11 @@ public interface AcoesJogador {
 
     /** Disparado quando o jogador pede para voltar à tela inicial. */
     void aoPedirNovoJogo();
+
+    /** Disparado quando o jogador solicita uma dica. */
+    void aoPedirDica();
+    
+    /** Disparado quando o jogador solicita ver o top 5. */
+    void aoMostrarTop5();
+
 }

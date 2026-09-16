@@ -1,6 +1,7 @@
 package controller;
 
 import model.Tabuleiro;
+import model.Recordes;
 import view.CampoMinadoView;
 
 import javax.swing.Timer;
@@ -10,8 +11,9 @@ import java.util.List;
  * CONTROLLER da arquitetura MVC: é o único ponto que conhece tanto o
  * {@link Tabuleiro} (Model) quanto a {@link CampoMinadoView} (View).
  * Recebe notificações de clique da View através de {@link AcoesJogador},
- * aplica a jogada no Model e manda a View se redesenhar. A View nunca
- * toca no Model diretamente, e o Model nunca conhece a View.
+ * aplica a jogada no Model e manda a View se redesenhar.
+ *
+ * A View nunca toca no Model diretamente, e o Model nunca conhece a View.
  */
 public class CampoMinadoController implements AcoesJogador {
 
@@ -27,6 +29,15 @@ public class CampoMinadoController implements AcoesJogador {
     private int limiteSegundos;
     private Timer timerJogo;
 
+    private final Recordes recordes =
+            new Recordes();
+
+    private String dificuldadeAtual;
+
+    private int dicasUsadas;
+
+    private static final int MAX_DICAS = 3;
+
     public CampoMinadoController(CampoMinadoView view) {
         this.view = view;
         this.view.setOuvinte(this);
@@ -34,21 +45,39 @@ public class CampoMinadoController implements AcoesJogador {
 
     public void iniciar() {
         view.mostrarTelaInicial();
+        atualizarRecordesNaView();
         view.setVisible(true);
     }
 
-    // ================================================================
-    // AcoesJogador — chamado pela View
-    // ================================================================
-
     @Override
-    public void aoEscolherDificuldade(int linhas, int colunas, int minas) {
-        this.tabuleiro = new Tabuleiro(linhas, colunas, minas);
+    public void aoEscolherDificuldade(
+            int linhas,
+            int colunas,
+            int minas) {
+
+        this.tabuleiro =
+                new Tabuleiro(
+                        linhas,
+                        colunas,
+                        minas
+                );
+
         this.totalMinas = minas;
-        this.totalCelulas = linhas * colunas - minas;
+
+        this.totalCelulas =
+                linhas * colunas - minas;
+
         this.celulasReveladas = 0;
         this.jogadas = 0;
         this.jogoIniciado = false;
+        this.dicasUsadas = 0;
+
+        this.dificuldadeAtual =
+                identificarDificuldade(
+                        linhas,
+                        colunas,
+                        minas
+                );
 
         pararTimer();
 
@@ -73,21 +102,92 @@ public class CampoMinadoController implements AcoesJogador {
                 0,
                 tabuleiro.getVidasRestantes()
         );
+
+        view.atualizarDicas(
+                dicasUsadas,
+                MAX_DICAS
+        );
     }
 
     @Override
     public void aoPedirNovoJogo() {
+
         pararTimer();
+
         view.mostrarTelaInicial();
+
+        atualizarRecordesNaView();
     }
 
     @Override
-    public void aoMarcarCelula(int linha, int coluna) {
-        if (tabuleiro == null || tabuleiro.isJogoEncerrado()) {
+    public void aoPedirDica() {
+
+        if (tabuleiro == null
+                || tabuleiro.isJogoEncerrado()
+                || dicasUsadas >= MAX_DICAS) {
+
             return;
         }
 
-        tabuleiro.alternarMarcacao(linha, coluna);
+        int[] segura =
+                encontrarCelulaSegura();
+
+        if (segura == null) {
+
+            view.mostrarMensagemDica(
+                    "Não há uma célula segura disponível para indicar."
+            );
+
+            return;
+        }
+
+        dicasUsadas++;
+
+        view.destacarCelulaDica(
+                segura[0],
+                segura[1]
+        );
+
+        view.atualizarDicas(
+                dicasUsadas,
+                MAX_DICAS
+        );
+
+        view.mostrarMensagemDica(
+                "Dica: a célula destacada é segura."
+        );
+    }
+@Override
+public void aoMostrarTop5() {
+
+    view.mostrarTop5(
+            recordes.obterTop5(
+                    Recordes.INICIANTE
+            ),
+            recordes.obterTop5(
+                    Recordes.INTERMEDIARIO
+            ),
+            recordes.obterTop5(
+                    Recordes.AVANCADO
+            )
+    );
+}
+
+    @Override
+    public void aoMarcarCelula(
+            int linha,
+            int coluna) {
+
+        if (tabuleiro == null
+                || tabuleiro.isJogoEncerrado()) {
+
+            return;
+        }
+
+        tabuleiro.alternarMarcacao(
+                linha,
+                coluna
+        );
 
         view.atualizarCelula(
                 linha,
@@ -99,46 +199,62 @@ public class CampoMinadoController implements AcoesJogador {
     }
 
     @Override
-    public void aoRevelarCelula(int linha, int coluna) {
-        if (tabuleiro == null || tabuleiro.isJogoEncerrado()) {
+    public void aoRevelarCelula(
+            int linha,
+            int coluna) {
+
+        if (tabuleiro == null
+                || tabuleiro.isJogoEncerrado()) {
+
             return;
         }
 
         if (!jogoIniciado) {
+
             jogoIniciado = true;
-            tempoInicio = System.currentTimeMillis();
+
+            tempoInicio =
+                    System.currentTimeMillis();
+
             iniciarTimer();
         }
 
-if (limiteSegundos > 0
-        && obterSegundosPassados() >= limiteSegundos) {
-    encerrarPorTempo();
-    return;
-}
+        if (limiteSegundos > 0
+                && obterSegundosPassados() >= limiteSegundos) {
 
-if (tabuleiro.isRevelada(linha, coluna)) {
-    return;
-}
+            encerrarPorTempo();
 
-jogadas++;
+            return;
+        }
 
-/*
- * O Model agora é responsável por decidir o que acontece quando
- * uma mina é clicada. O Controller apenas aplica a jogada e
- * aguarda o estado atualizado do Model.
- *
- * Se ainda houver vidas, isJogoEncerrado() continuará falso.
- * Portanto, a partida seguirá normalmente.
- */
-List<int[]> reveladas =
-        tabuleiro.revelar(linha, coluna);
+        /*
+         * Evita contar novamente uma célula
+         * que já foi revelada.
+         */
+        if (tabuleiro.isRevelada(
+                linha,
+                coluna)) {
+
+            return;
+        }
+
+        jogadas++;
+
+        List<int[]> reveladas =
+                tabuleiro.revelar(
+                        linha,
+                        coluna
+                );
 
         celulasReveladas =
                 contarCelulasReveladas();
 
-        int atraso = reveladas.size() > 80
-                ? 3
-                : (reveladas.size() > 25 ? 8 : 18);
+        int atraso =
+                reveladas.size() > 80
+                        ? 3
+                        : (reveladas.size() > 25
+                        ? 8
+                        : 18);
 
         animarRevelacao(
                 reveladas,
@@ -147,17 +263,105 @@ List<int[]> reveladas =
         );
     }
 
-    // ================================================================
-    // Contagens e sincronização com a View
-    // ================================================================
+    /**
+     * Procura uma célula que:
+     * - ainda não foi revelada;
+     * - não está marcada;
+     * - não contém mina.
+     */
+    private int[] encontrarCelulaSegura() {
 
+        for (int i = 0;
+             i < tabuleiro.getLinhas();
+             i++) {
+
+            for (int j = 0;
+                 j < tabuleiro.getColunas();
+                 j++) {
+
+                if (!tabuleiro.isRevelada(i, j)
+                        && !tabuleiro.isMarcada(i, j)
+                        && !tabuleiro.isMinada(i, j)) {
+
+                    return new int[]{
+                            i,
+                            j
+                    };
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Identifica a dificuldade a partir
+     * das dimensões e quantidade de minas.
+     */
+    private String identificarDificuldade(
+            int linhas,
+            int colunas,
+            int minas) {
+
+        if (linhas == 9
+                && colunas == 9
+                && minas == 10) {
+
+            return Recordes.INICIANTE;
+        }
+
+        if (linhas == 16
+                && colunas == 16
+                && minas == 40) {
+
+            return Recordes.INTERMEDIARIO;
+        }
+
+        if (linhas == 16
+                && colunas == 30
+                && minas == 99) {
+
+            return Recordes.AVANCADO;
+        }
+
+        return Recordes.INICIANTE;
+    }
+
+    /**
+     * Atualiza os melhores tempos apresentados
+     * na tela inicial.
+     *
+     * Por enquanto a View recebe o melhor tempo
+     * de cada dificuldade.
+     */
+private void atualizarRecordesNaView() {
+
+    view.atualizarTop5(
+            recordes.obterTop5(
+                Recordes.INICIANTE),
+
+            recordes.obterTop5(
+                Recordes.INTERMEDIARIO),
+                
+            recordes.obterTop5(
+                Recordes.AVANCADO)
+    );
+}
     private int contarCelulasReveladas() {
+
         int count = 0;
 
-        for (int i = 0; i < tabuleiro.getLinhas(); i++) {
-            for (int j = 0; j < tabuleiro.getColunas(); j++) {
+        for (int i = 0;
+             i < tabuleiro.getLinhas();
+             i++) {
+
+            for (int j = 0;
+                 j < tabuleiro.getColunas();
+                 j++) {
+
                 if (tabuleiro.isRevelada(i, j)
                         && !tabuleiro.isMinada(i, j)) {
+
                     count++;
                 }
             }
@@ -167,10 +371,17 @@ List<int[]> reveladas =
     }
 
     private int contarMarcadas() {
+
         int count = 0;
 
-        for (int i = 0; i < tabuleiro.getLinhas(); i++) {
-            for (int j = 0; j < tabuleiro.getColunas(); j++) {
+        for (int i = 0;
+             i < tabuleiro.getLinhas();
+             i++) {
+
+            for (int j = 0;
+                 j < tabuleiro.getColunas();
+                 j++) {
+
                 if (tabuleiro.isMarcada(i, j)) {
                     count++;
                 }
@@ -181,6 +392,7 @@ List<int[]> reveladas =
     }
 
     private void atualizarEstatisticasNaView() {
+
         int restantes =
                 totalMinas - contarMarcadas();
 
@@ -193,38 +405,44 @@ List<int[]> reveladas =
         );
     }
 
-    // ================================================================
-    // Timer do cronômetro
-    // ================================================================
-
     private void iniciarTimer() {
-        timerJogo = new Timer(
-                1000,
-                e -> atualizarTempo()
-        );
+
+        timerJogo =
+                new Timer(
+                        1000,
+                        e -> atualizarTempo()
+                );
 
         timerJogo.start();
     }
 
     private void pararTimer() {
+
         if (timerJogo != null) {
             timerJogo.stop();
         }
     }
 
     private long obterSegundosPassados() {
-        return (System.currentTimeMillis() - tempoInicio) / 1000;
+
+        return (
+                System.currentTimeMillis()
+                        - tempoInicio
+        ) / 1000;
     }
 
     private void atualizarTempo() {
+
         long segundosPassados =
                 obterSegundosPassados();
 
         if (limiteSegundos > 0) {
+
             long restantes =
                     Math.max(
                             0,
-                            limiteSegundos - segundosPassados
+                            limiteSegundos
+                                    - segundosPassados
                     );
 
             view.atualizarTempo(
@@ -236,10 +454,14 @@ List<int[]> reveladas =
             );
 
             if (restantes <= 0) {
+
                 encerrarPorTempo();
+
                 return;
             }
+
         } else {
+
             view.atualizarTempo(
                     String.format(
                             "%02d:%02d",
@@ -251,30 +473,34 @@ List<int[]> reveladas =
     }
 
     private void encerrarPorTempo() {
+
         pararTimer();
 
         if (tabuleiro != null
                 && !tabuleiro.isJogoEncerrado()) {
-            tabuleiro = new Tabuleiro(
-                    tabuleiro.getLinhas(),
-                    tabuleiro.getColunas(),
-                    tabuleiro.getNumMinas()
-            );
 
-            // Não reiniciamos o tabuleiro; apenas exibimos derrota devido ao tempo.
+            tabuleiro =
+                    new Tabuleiro(
+                            tabuleiro.getLinhas(),
+                            tabuleiro.getColunas(),
+                            tabuleiro.getNumMinas()
+                    );
+
+            /*
+             * Não reiniciamos o tabuleiro visualmente.
+             * Apenas encerramos a partida por tempo.
+             */
         }
 
         view.mostrarDerrota();
+
         labelStatusTempoEsgotado();
     }
 
     private void labelStatusTempoEsgotado() {
+
         view.mostrarDerrota();
     }
-
-    // ================================================================
-    // Animações
-    // ================================================================
 
     private void animarRevelacao(
             List<int[]> celulas,
@@ -282,7 +508,9 @@ List<int[]> reveladas =
             int atraso) {
 
         if (indice >= celulas.size()) {
+
             finalizarJogada();
+
             return;
         }
 
@@ -295,47 +523,126 @@ List<int[]> reveladas =
                 tabuleiro
         );
 
-        Timer timer = new Timer(
-                atraso,
-                e -> animarRevelacao(
-                        celulas,
-                        indice + 1,
-                        atraso
-                )
-        );
+        Timer timer =
+                new Timer(
+                        atraso,
+                        e -> animarRevelacao(
+                                celulas,
+                                indice + 1,
+                                atraso
+                        )
+                );
 
         timer.setRepeats(false);
         timer.start();
     }
 
+    /**
+     * Finaliza uma jogada e verifica se a partida terminou.
+     *
+     * Em caso de vitória:
+     * 1. calcula o tempo;
+     * 2. verifica se entra no Top 5;
+     * 3. somente se entrar, solicita o nome;
+     * 4. salva nome + tempo;
+     * 5. atualiza os recordes na View.
+     */
     private void finalizarJogada() {
+
         atualizarEstatisticasNaView();
 
-        /*
-         * Se o jogador acertou uma mina mas ainda possui vidas,
-         * o Model mantém jogoEncerrado como false e chegamos aqui.
-         * Nesse caso, simplesmente retornamos e a partida continua.
-         */
         if (!tabuleiro.isJogoEncerrado()) {
             return;
         }
 
         pararTimer();
 
+        /*
+         * DERROTA
+         *
+         * Não registra recorde.
+         */
         if (tabuleiro.isDerrota()) {
+
             view.mostrarDerrota();
+
             animarExplosao();
-        } else {
-            view.mostrarVitoria();
-            animarVitoria();
+
+            return;
         }
+
+        /*
+         * VITÓRIA
+         */
+        int tempoVitoria =
+                (int) obterSegundosPassados();
+
+        view.mostrarVitoria();
+
+        /*
+         * Só pergunta o nome se o tempo
+         * realmente puder entrar no Top 5.
+         */
+        if (recordes.podeEntrarNoTop5(
+                dificuldadeAtual,
+                tempoVitoria)) {
+
+            String nome =
+                    view.solicitarNomeJogador();
+
+            /*
+             * Caso o usuário deixe o nome vazio
+             * ou cancele, usamos "Jogador".
+             */
+            if (nome == null
+                    || nome.trim().isEmpty()) {
+
+                nome = "Jogador";
+            }
+
+            nome = nome.trim();
+
+            recordes.adicionarRecorde(
+                    dificuldadeAtual,
+                    nome,
+                    tempoVitoria
+            );
+
+            view.mostrarMensagemDica(
+                    "Você entrou no Top 5 com "
+                            + tempoVitoria
+                            + " segundo(s)!"
+            );
+
+            atualizarRecordesNaView();
+
+        } else {
+
+            /*
+             * Vitória que não entrou no Top 5.
+             */
+            view.mostrarMensagemDica(
+                    "Vitória em "
+                            + tempoVitoria
+                            + " segundo(s)."
+            );
+        }
+
+        animarVitoria();
     }
 
     private void animarExplosao() {
-        Timer piscar = new Timer(100, null);
+
+        Timer piscar =
+                new Timer(
+                        100,
+                        null
+                );
+
         int[] contador = {0};
 
         piscar.addActionListener(e -> {
+
             contador[0]++;
 
             view.piscarFundoDeExplosao(
@@ -343,9 +650,11 @@ List<int[]> reveladas =
             );
 
             if (contador[0] >= 6) {
+
                 piscar.stop();
 
                 view.piscarFundoDeExplosao(false);
+
                 revelarMinasComAnimacao();
             }
         });
@@ -354,16 +663,26 @@ List<int[]> reveladas =
     }
 
     private void revelarMinasComAnimacao() {
+
         List<int[]> minasNaoReveladas =
                 new java.util.ArrayList<>();
 
-        for (int i = 0; i < tabuleiro.getLinhas(); i++) {
-            for (int j = 0; j < tabuleiro.getColunas(); j++) {
+        for (int i = 0;
+             i < tabuleiro.getLinhas();
+             i++) {
+
+            for (int j = 0;
+                 j < tabuleiro.getColunas();
+                 j++) {
+
                 if (tabuleiro.isMinada(i, j)
                         && !tabuleiro.isRevelada(i, j)) {
 
                     minasNaoReveladas.add(
-                            new int[]{i, j}
+                            new int[]{
+                                    i,
+                                    j
+                            }
                     );
                 }
             }
@@ -391,29 +710,40 @@ List<int[]> reveladas =
                 posicao[1]
         );
 
-        Timer timer = new Timer(
-                80,
-                e -> revelarMinasPasso(
-                        minas,
-                        indice + 1
-                )
-        );
+        Timer timer =
+                new Timer(
+                        80,
+                        e -> revelarMinasPasso(
+                                minas,
+                                indice + 1
+                        )
+                );
 
         timer.setRepeats(false);
         timer.start();
     }
 
     private void animarVitoria() {
+
         List<int[]> celulasSeguras =
                 new java.util.ArrayList<>();
 
-        for (int i = 0; i < tabuleiro.getLinhas(); i++) {
-            for (int j = 0; j < tabuleiro.getColunas(); j++) {
+        for (int i = 0;
+             i < tabuleiro.getLinhas();
+             i++) {
+
+            for (int j = 0;
+                 j < tabuleiro.getColunas();
+                 j++) {
+
                 if (tabuleiro.isRevelada(i, j)
                         && !tabuleiro.isMinada(i, j)) {
 
                     celulasSeguras.add(
-                            new int[]{i, j}
+                            new int[]{
+                                    i,
+                                    j
+                            }
                     );
                 }
             }
@@ -441,13 +771,14 @@ List<int[]> reveladas =
                 atual[1]
         );
 
-        Timer timer = new Timer(
-                8,
-                e -> vitoriaPasso(
-                        celulas,
-                        indice + 1
-                )
-        );
+        Timer timer =
+                new Timer(
+                        8,
+                        e -> vitoriaPasso(
+                                celulas,
+                                indice + 1
+                        )
+                );
 
         timer.setRepeats(false);
         timer.start();
