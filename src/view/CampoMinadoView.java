@@ -2,6 +2,7 @@ package view;
 
 import controller.AcoesJogador;
 import model.LeituraTabuleiro;
+import model.Recordes;
 
 import javax.swing.*;
 import java.awt.*;
@@ -320,6 +321,9 @@ public class CampoMinadoView extends JFrame {
     private JLabel lblCelulasReveladas;
     private JLabel lblJogadas;
     private JLabel lblVidas;
+    private JLabel lblRecordes;
+    private JButton botaoDica;
+    private JButton botaoTop5;
     private JProgressBar barraProgresso;
 
     private JComboBox<String> comboTemaFundo;
@@ -1708,6 +1712,33 @@ public class CampoMinadoView extends JFrame {
                 tutorial
         );
 
+        conteudo.add(
+        Box.createVerticalStrut(
+                12
+        )
+);
+
+botaoTop5 =
+        criarBotaoSecundario(
+                "🏆 Ver Top 5"
+        );
+
+botaoTop5.setAlignmentX(
+        Component.CENTER_ALIGNMENT
+);
+
+botaoTop5.addActionListener(
+        e -> {
+            if (ouvinte != null) {
+                ouvinte.aoMostrarTop5();
+            }
+        }
+);
+
+conteudo.add(
+        botaoTop5
+);
+
         painelPrincipal.add(
                 conteudo,
                 BorderLayout.CENTER
@@ -1825,7 +1856,8 @@ public class CampoMinadoView extends JFrame {
                         new String[]{
                                 "Iniciante - 9 x 9 - 10 minas",
                                 "Intermediario - 16 x 16 - 40 minas",
-                                "Avancado - 16 x 30 - 99 minas"
+                                "Avancado - 16 x 30 - 99 minas",
+                                "Modo Customizado"
                         }
                 );
 
@@ -2117,6 +2149,17 @@ public class CampoMinadoView extends JFrame {
             linhas = 16;
             colunas = 30;
             minas = 99;
+        } else if (selecionado == 3) {
+            int[] configuracao =
+                    solicitarConfiguracaoCustomizada();
+
+            if (configuracao == null) {
+                return;
+            }
+
+            linhas = configuracao[0];
+            colunas = configuracao[1];
+            minas = configuracao[2];
         }
 
         if (ouvinte != null) {
@@ -2126,6 +2169,142 @@ public class CampoMinadoView extends JFrame {
                     minas
             );
         }
+    }
+
+    /**
+     * Abre a janela de configuração do Modo Customizado.
+     *
+     * A View é responsável apenas por coletar e validar os dados da
+     * interface. Depois de validados, os valores são enviados ao
+     * Controller pelo mesmo contrato utilizado pelas dificuldades
+     * predefinidas.
+     *
+     * @return {linhas, colunas, minas} ou null quando a configuração
+     *         for cancelada.
+     */
+    private int[] solicitarConfiguracaoCustomizada() {
+
+        JTextField campoColunas =
+                new JTextField("10", 10);
+
+        JTextField campoLinhas =
+                new JTextField("10", 10);
+
+        JTextField campoMinas =
+                new JTextField("10", 10);
+
+        JPanel painel =
+                new JPanel(
+                        new GridLayout(0, 2, 8, 8)
+                );
+
+        painel.add(
+                new JLabel("Largura (colunas):")
+        );
+        painel.add(campoColunas);
+
+        painel.add(
+                new JLabel("Altura (linhas):")
+        );
+        painel.add(campoLinhas);
+
+        painel.add(
+                new JLabel("Quantidade de minas:")
+        );
+        painel.add(campoMinas);
+
+        while (true) {
+            int resultado =
+                    JOptionPane.showConfirmDialog(
+                            this,
+                            painel,
+                            "Modo Customizado",
+                            JOptionPane.OK_CANCEL_OPTION,
+                            JOptionPane.PLAIN_MESSAGE
+                    );
+
+            if (resultado != JOptionPane.OK_OPTION) {
+                return null;
+            }
+
+            String textoColunas =
+                    campoColunas.getText().trim();
+
+            String textoLinhas =
+                    campoLinhas.getText().trim();
+
+            String textoMinas =
+                    campoMinas.getText().trim();
+
+            if (textoColunas.isEmpty()
+                    || textoLinhas.isEmpty()
+                    || textoMinas.isEmpty()) {
+
+                mostrarErroConfiguracaoCustomizada(
+                        "Preencha todos os campos."
+                );
+                continue;
+            }
+
+            try {
+                int colunas =
+                        Integer.parseInt(textoColunas);
+
+                int linhas =
+                        Integer.parseInt(textoLinhas);
+
+                int minas =
+                        Integer.parseInt(textoMinas);
+
+                if (linhas < 5 || colunas < 5) {
+                    mostrarErroConfiguracaoCustomizada(
+                            "O tabuleiro deve ter no mínimo 5 x 5."
+                    );
+                    continue;
+                }
+
+                if (minas <= 0) {
+                    mostrarErroConfiguracaoCustomizada(
+                            "A quantidade de minas deve ser maior que zero."
+                    );
+                    continue;
+                }
+
+                long totalCelulas =
+                        (long) linhas * colunas;
+
+                if (minas >= totalCelulas) {
+                    mostrarErroConfiguracaoCustomizada(
+                            "A quantidade de minas deve ser menor que o total de células ("
+                                    + totalCelulas
+                                    + ")."
+                    );
+                    continue;
+                }
+
+                return new int[]{
+                        linhas,
+                        colunas,
+                        minas
+                };
+
+            } catch (NumberFormatException ex) {
+                mostrarErroConfiguracaoCustomizada(
+                        "Informe somente números inteiros válidos."
+                );
+            }
+        }
+    }
+
+    private void mostrarErroConfiguracaoCustomizada(
+            String mensagem
+    ) {
+        JOptionPane.showMessageDialog(
+                this,
+                mensagem,
+                "Configuração inválida",
+                JOptionPane.WARNING_MESSAGE
+        );
     }
 
     private JPanel encontrarPainelConfiguracoes() {
@@ -2180,6 +2359,7 @@ public class CampoMinadoView extends JFrame {
                         + "<li>O objetivo é revelar todas as células que não possuem minas.</li>"
                         + "<li>Se explodir uma mina, o jogo segue conforme as vidas restantes.</li>"
                         + "<li>Se o tempo limite for atingido, a partida termina em derrota.</li>"
+                        + "<li>Use o botão <b>Dica</b> para destacar uma célula segura (até 3 vezes por partida).</li>"
                         + "<li>Use F11 ou o botão <b>Tela cheia</b> para alternar a visualização.</li>"
                         + "</ol>"
                         + "</div>"
@@ -2188,6 +2368,266 @@ public class CampoMinadoView extends JFrame {
                 JOptionPane.INFORMATION_MESSAGE
         );
     }
+public void mostrarTop5(
+        java.util.List<Recordes.Registro> top5Iniciante,
+        java.util.List<Recordes.Registro> top5Intermediario,
+        java.util.List<Recordes.Registro> top5Avancado
+) {
+
+    JDialog dialog =
+            new JDialog(
+                    this,
+                    "🏆 Top 5 - Melhores Tempos",
+                    true
+            );
+
+    dialog.setSize(
+            850,
+            400
+    );
+
+    dialog.setLocationRelativeTo(
+            this
+    );
+
+    dialog.setResizable(
+            true
+    );
+
+    JPanel painelPrincipalTop5 =
+            new JPanel(
+                    new BorderLayout(
+                            10,
+                            10
+                    )
+            );
+
+    painelPrincipalTop5.setBorder(
+            BorderFactory.createEmptyBorder(
+                    15,
+                    15,
+                    15,
+                    15
+            )
+    );
+
+    painelPrincipalTop5.setBackground(
+            corFundo
+    );
+
+    JLabel titulo =
+            new JLabel(
+                    "🏆 TOP 5 - MELHORES TEMPOS",
+                    SwingConstants.CENTER
+            );
+
+    titulo.setFont(
+            fonteTitulo
+    );
+
+    titulo.setForeground(
+            corDestaque
+    );
+
+    painelPrincipalTop5.add(
+            titulo,
+            BorderLayout.NORTH
+    );
+
+    JPanel painelColunas =
+            new JPanel(
+                    new GridLayout(
+                            1,
+                            3,
+                            15,
+                            0
+                    )
+            );
+
+    painelColunas.setBackground(
+            corFundo
+    );
+
+    painelColunas.add(
+            criarColunaTop5(
+                    "Iniciante",
+                    top5Iniciante
+            )
+    );
+
+    painelColunas.add(
+            criarColunaTop5(
+                    "Intermediário",
+                    top5Intermediario
+            )
+    );
+
+    painelColunas.add(
+            criarColunaTop5(
+                    "Avançado",
+                    top5Avancado
+            )
+    );
+
+    painelPrincipalTop5.add(
+            painelColunas,
+            BorderLayout.CENTER
+    );
+
+    JButton botaoFechar =
+            criarBotaoSecundario(
+                    "Fechar"
+            );
+
+    botaoFechar.addActionListener(
+            e -> dialog.dispose()
+    );
+
+    JPanel painelBotao =
+            new JPanel(
+                    new FlowLayout(
+                            FlowLayout.CENTER
+                    )
+            );
+
+    painelBotao.setBackground(
+            corFundo
+    );
+
+    painelBotao.add(
+            botaoFechar
+    );
+
+    painelPrincipalTop5.add(
+            painelBotao,
+            BorderLayout.SOUTH
+    );
+
+    dialog.setContentPane(
+            painelPrincipalTop5
+    );
+
+    dialog.setVisible(
+            true
+    );
+}
+private JPanel criarColunaTop5(
+        String titulo,
+        java.util.List<Recordes.Registro> registros
+) {
+
+    JPanel painel =
+            new JPanel(
+                    new BorderLayout(
+                            5,
+                            5
+                    )
+            );
+
+    painel.setBackground(
+            corCard
+    );
+
+    painel.setBorder(
+            BorderFactory.createTitledBorder(
+                    BorderFactory.createLineBorder(
+                            corBorda
+                    ),
+                    titulo
+            )
+    );
+
+    JPanel lista =
+            new JPanel();
+
+    lista.setLayout(
+            new BoxLayout(
+                    lista,
+                    BoxLayout.Y_AXIS
+            )
+    );
+
+    lista.setBackground(
+            corCard
+    );
+
+    if (registros == null
+            || registros.isEmpty()) {
+
+        JLabel vazio =
+                new JLabel(
+                        "Nenhum recorde ainda."
+                );
+
+        vazio.setFont(
+                fontePequena
+        );
+
+        vazio.setForeground(
+                corTextoSecundario
+        );
+
+        vazio.setAlignmentX(
+                Component.CENTER_ALIGNMENT
+        );
+
+        lista.add(
+                vazio
+        );
+
+    } else {
+
+        for (int i = 0;
+             i < registros.size();
+             i++) {
+
+            Recordes.Registro registro =
+                    registros.get(i);
+
+            JLabel jogador =
+                    new JLabel(
+                            (i + 1)
+                                    + ". "
+                                    + registro.getNome()
+                                    + " - "
+                                    + registro.getTempoSegundos()
+                                    + " s"
+                    );
+
+            jogador.setFont(
+                    fontePequena
+            );
+
+            jogador.setForeground(
+                    corTextoPrincipal
+            );
+
+            jogador.setAlignmentX(
+                    Component.CENTER_ALIGNMENT
+            );
+
+            jogador.setBorder(
+                    BorderFactory.createEmptyBorder(
+                            5,
+                            5,
+                            5,
+                            5
+                    )
+            );
+
+            lista.add(
+                    jogador
+            );
+        }
+    }
+
+    painel.add(
+            lista,
+            BorderLayout.CENTER
+    );
+
+    return painel;
+}
 
     // ================================================================
     // Tela de jogo
@@ -2478,6 +2918,55 @@ public class CampoMinadoView extends JFrame {
                 }
         );
 
+        botaoDica =
+                new JButton(
+                        "Dica (3 restantes)"
+                );
+
+        botaoDica.setFont(
+                fontePequena
+        );
+
+        botaoDica.setForeground(
+                corTextoPrincipal
+        );
+
+        botaoDica.setBackground(
+                corFundoClaro
+        );
+
+        botaoDica.setFocusPainted(
+                false
+        );
+
+        botaoDica.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(
+                                corBorda
+                        ),
+                        BorderFactory.createEmptyBorder(
+                                7,
+                                12,
+                                7,
+                                12
+                        )
+                )
+        );
+
+        botaoDica.setCursor(
+                new Cursor(
+                        Cursor.HAND_CURSOR
+                )
+        );
+
+        botaoDica.addActionListener(
+                e -> {
+                    if (ouvinte != null) {
+                        ouvinte.aoPedirDica();
+                    }
+                }
+        );
+
         JButton telaCheiaBotao =
                 new JButton(
                         telaCheia
@@ -2541,6 +3030,10 @@ public class CampoMinadoView extends JFrame {
 
         botoes.setOpaque(
                 false
+        );
+
+        botoes.add(
+                botaoDica
         );
 
         botoes.add(
@@ -3028,7 +3521,14 @@ public class CampoMinadoView extends JFrame {
                                         )
                                 );
 
-                        if (!revelada) {
+                        boolean dica =
+                                Boolean.TRUE.equals(
+                                        botao.getClientProperty(
+                                                "dica"
+                                        )
+                                );
+
+                        if (!revelada && !dica) {
                             botao.setBackground(
                                     corCelulaOcultaHover
                             );
@@ -3046,7 +3546,14 @@ public class CampoMinadoView extends JFrame {
                                         )
                                 );
 
-                        if (!revelada) {
+                        boolean dica =
+                                Boolean.TRUE.equals(
+                                        botao.getClientProperty(
+                                                "dica"
+                                        )
+                                );
+
+                        if (!revelada && !dica) {
                             botao.setBackground(
                                     corCelulaOculta
                             );
@@ -3139,6 +3646,188 @@ public class CampoMinadoView extends JFrame {
     // Atualização das células
     // ================================================================
 
+    public void atualizarDicas(
+            int dicasUsadas,
+            int limiteDicas
+    ) {
+        if (botaoDica == null) {
+            return;
+        }
+
+        int dicasRestantes =
+                Math.max(
+                        0,
+                        limiteDicas - dicasUsadas
+                );
+
+        botaoDica.setText(
+                "Dica ("
+                        + dicasRestantes
+                        + " restantes)"
+        );
+
+        botaoDica.setEnabled(
+                dicasRestantes > 0
+        );
+    }
+
+    public void destacarCelulaDica(
+            int linha,
+            int coluna
+    ) {
+        if (painelTabuleiro == null) {
+            return;
+        }
+
+        int indice =
+                linha
+                        * painelQuantidadeColunas()
+                        + coluna;
+
+        if (indice < 0
+                || indice >= painelTabuleiro
+                        .getComponentCount()) {
+            return;
+        }
+
+        Component componente =
+                painelTabuleiro.getComponent(
+                        indice
+                );
+
+        if (!(componente instanceof JButton)) {
+            return;
+        }
+
+        JButton botao =
+                (JButton) componente;
+
+        botao.putClientProperty(
+                "dica",
+                true
+        );
+
+        botao.setBackground(
+                corDestaque
+        );
+
+        botao.setForeground(
+                corFundo
+        );
+
+        botao.setBorder(
+                BorderFactory.createLineBorder(
+                        corDestaque,
+                        3
+                )
+        );
+
+        botao.repaint();
+    }
+
+    public void mostrarMensagemDica(
+            String mensagem
+    ) {
+        if (labelStatus != null) {
+            labelStatus.setText(
+                    EMOJI_BOMBA
+                            + " "
+                            + mensagem
+            );
+
+            labelStatus.setForeground(
+                    corDestaque
+            );
+        }
+    }
+
+    public void atualizarRecordes(
+            int recordeIniciante,
+            int recordeIntermediario,
+            int recordeAvancado
+    ) {
+        if (lblRecordes == null) {
+            return;
+        }
+
+        lblRecordes.setText(
+                "<html><center>"
+                        + "<b>🏆 Melhores tempos</b><br>"
+                        + "Iniciante: "
+                        + formatarRecorde(recordeIniciante)
+                        + " &nbsp; | &nbsp; "
+                        + "Intermediário: "
+                        + formatarRecorde(recordeIntermediario)
+                        + " &nbsp; | &nbsp; "
+                        + "Avançado: "
+                        + formatarRecorde(recordeAvancado)
+                        + "</center></html>"
+        );
+    }
+public void atualizarTop5(
+        java.util.List<Recordes.Registro> top5Iniciante,
+        java.util.List<Recordes.Registro> top5Intermediario,
+        java.util.List<Recordes.Registro> top5Avancado
+) {
+    if (lblRecordes == null) {
+        return;
+    }
+
+    StringBuilder html = new StringBuilder();
+
+    html.append("<html><center>");
+    html.append("<b>🏆 TOP 5 - MELHORES TEMPOS</b><br><br>");
+
+    html.append("<b>Iniciante</b><br>");
+    html.append(formatarTop5(top5Iniciante));
+    html.append("<br>");
+
+    html.append("<b>Intermediário</b><br>");
+    html.append(formatarTop5(top5Intermediario));
+    html.append("<br>");
+
+    html.append("<b>Avançado</b><br>");
+    html.append(formatarTop5(top5Avancado));
+
+    html.append("</center></html>");
+
+    lblRecordes.setText(html.toString());
+}
+
+private String formatarTop5(
+        java.util.List<Recordes.Registro> registros
+) {
+    if (registros == null || registros.isEmpty()) {
+        return "Nenhum recorde ainda.";
+    }
+
+    StringBuilder texto = new StringBuilder();
+
+    for (int i = 0; i < registros.size(); i++) {
+
+        Recordes.Registro registro = registros.get(i);
+
+        texto.append(i + 1)
+                .append(". ")
+                .append(registro.getNome())
+                .append(" - ")
+                .append(registro.getTempoSegundos())
+                .append(" s")
+                .append("<br>");
+    }
+
+    return texto.toString();
+}
+    private String formatarRecorde(
+            int segundos
+    ) {
+        if (segundos < 0) {
+            return "—";
+        }
+
+        return segundos + " s";
+    }
+
     public void atualizarCelula(
             int linha,
             int coluna,
@@ -3172,6 +3861,11 @@ public class CampoMinadoView extends JFrame {
 
         JButton botao =
                 (JButton) componente;
+
+        botao.putClientProperty(
+                "dica",
+                false
+        );
 
         boolean revelada =
                 leitura.isRevelada(
@@ -3518,33 +4212,60 @@ public class CampoMinadoView extends JFrame {
     }
 
     // ================================================================
-    // Resultado da partida
-    // ================================================================
+// Resultado da partida
+// ================================================================
 
-    public void mostrarDerrota() {
-        if (labelStatus != null) {
-            labelStatus.setText(
-                    EMOJI_BOMBA
-                            + " Game Over"
+/**
+ * Solicita o nome do jogador quando ele consegue entrar
+ * no Top 5 da dificuldade atual.
+ *
+ * @return nome informado pelo jogador ou "Jogador" caso
+ *         o campo fique vazio ou a janela seja cancelada.
+ */
+public String solicitarNomeJogador() {
+
+    String nome =
+            JOptionPane.showInputDialog(
+                    this,
+                    "Parabéns! Você entrou no Top 5!\n"
+                            + "Digite seu nome:",
+                    "Novo recorde",
+                    JOptionPane.PLAIN_MESSAGE
             );
 
-            labelStatus.setForeground(
-                    corMina
-            );
-        }
+    if (nome == null
+            || nome.trim().isEmpty()) {
+
+        return "Jogador";
     }
 
-    public void mostrarVitoria() {
-        if (labelStatus != null) {
-            labelStatus.setText(
-                    "✓ Vitória!"
-            );
+    return nome.trim();
+}
 
-            labelStatus.setForeground(
-                    corVitoria
-            );
-        }
+public void mostrarDerrota() {
+    if (labelStatus != null) {
+        labelStatus.setText(
+                EMOJI_BOMBA
+                        + " Game Over"
+        );
+
+        labelStatus.setForeground(
+                corMina
+        );
     }
+}
+
+public void mostrarVitoria() {
+    if (labelStatus != null) {
+        labelStatus.setText(
+                "✓ Vitória!"
+        );
+
+        labelStatus.setForeground(
+                corVitoria
+        );
+    }
+}
 
     public void piscarFundoDeExplosao(
             boolean ativo
