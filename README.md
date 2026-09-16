@@ -24,6 +24,7 @@ Este projeto é uma versão em Java do jogo Campo Minado com interface gráfica 
 - Escolha de dificuldade: Iniciante, Intermediário e Avançado.
 - Estatísticas atualizadas em tempo real: tempo, minas restantes, células reveladas e jogadas.
 - Tema de cores para o plano de fundo e tabuleiro.
+- Temas visuais na View: Cyberpunk Neon e Terminal Retro, sem alterar a lógica do Model.
 - Tutorial integrado com instruções de jogo.
 - Tempo limite selecionável (até 5 minutos) como modo rápido.
 - Arquitetura MVC organizada em pastas.

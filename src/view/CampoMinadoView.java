@@ -43,6 +43,7 @@ public class CampoMinadoView extends JFrame {
     private static final Color COR_BANDEIRA = new Color(230, 180, 50);
 
     private static final String[] TEMAS_FUNDO = {"Escuro", "Claro", "Campo"};
+    private static final String[] TEMAS_VISUAIS = {"Padrão", "Cyberpunk Neon", "Terminal Retro"};
     private static final String[] TEMAS_TABULEIRO = {"Clássico", "Noite", "Verde"};
     private static final String[] TEMPOS_JOGO = {"Sem limite", "1 minuto", "2 minutos", "3 minutos", "5 minutos"};
 
@@ -88,6 +89,7 @@ public class CampoMinadoView extends JFrame {
     private JProgressBar barraProgresso;
 
     private JComboBox<String> comboTemaFundo;
+    private JComboBox<String> comboTemaVisual;
     private JComboBox<String> comboTemaTabuleiro;
     private JComboBox<String> comboTempo;
 
@@ -106,6 +108,17 @@ public class CampoMinadoView extends JFrame {
     private Color corBordaRevelada = COR_BORDA_REVELADA;
     private Color corTextoSobreRevelada = COR_TEXTO_SOBRE_REVELADA;
     private Color corMinaFundo = COR_MINA_FUNDO;
+    private Color corMina = COR_MINA;
+    private Color corVitoria = COR_VITORIA;
+    private Color corBandeira = COR_BANDEIRA;
+    private Color[] coresNumeros = CORES_NUMEROS;
+
+    private Font fonteCelula = FONTE_CELULA;
+    private Font fonteTitulo = FONTE_TITULO;
+    private Font fonteSubtitulo = FONTE_SUBTITULO;
+    private Font fonteNormal = FONTE_NORMAL;
+    private Font fonteNumero = FONTE_NUMERO;
+    private Font fontePequena = FONTE_PEQUENA;
 
     public CampoMinadoView() {
         super("Campo Minado");
@@ -129,29 +142,29 @@ public class CampoMinadoView extends JFrame {
         setLayout(new BorderLayout());
 
         JPanel painelCentral = new JPanel(new GridBagLayout());
-        painelCentral.setBackground(COR_FUNDO);
+        painelCentral.setBackground(corFundo);
         painelCentral.setBorder(BorderFactory.createEmptyBorder(40, 60, 40, 60));
 
         JPanel painelConteudo = new JPanel();
         painelConteudo.setLayout(new BoxLayout(painelConteudo, BoxLayout.Y_AXIS));
-        painelConteudo.setBackground(COR_FUNDO);
+        painelConteudo.setBackground(corFundo);
         painelConteudo.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel titulo = new JLabel(EMOJI_BOMBA + " Campo Minado");
-        titulo.setFont(FONTE_TITULO);
-        titulo.setForeground(COR_TEXTO_PRINCIPAL);
+        titulo.setFont(fonteTitulo);
+        titulo.setForeground(corTextoPrincipal);
         titulo.setAlignmentX(Component.CENTER_ALIGNMENT);
         painelConteudo.add(titulo);
 
         JLabel subtitulo = new JLabel("Escolha sua dificuldade");
-        subtitulo.setFont(FONTE_NORMAL);
-        subtitulo.setForeground(COR_TEXTO_SECUNDARIO);
+        subtitulo.setFont(fonteNormal);
+        subtitulo.setForeground(corTextoSecundario);
         subtitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
         subtitulo.setBorder(BorderFactory.createEmptyBorder(10, 0, 30, 0));
         painelConteudo.add(subtitulo);
 
         JPanel painelCards = new JPanel(new GridLayout(1, 3, 15, 0));
-        painelCards.setBackground(COR_FUNDO);
+        painelCards.setBackground(corFundo);
         painelCards.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         painelCards.add(criarCardDificuldade("Iniciante", "9 × 9", "10 minas", 9, 9, 10));
@@ -161,8 +174,8 @@ public class CampoMinadoView extends JFrame {
         painelConteudo.add(painelCards);
 
         JLabel dica = new JLabel("<html><center>\uD83D\uDDB1\uFE0F Esquerdo: revelar • Direito: bandeira</center></html>");
-        dica.setFont(FONTE_PEQUENA);
-        dica.setForeground(COR_TEXTO_SECUNDARIO);
+        dica.setFont(fontePequena);
+        dica.setForeground(corTextoSecundario);
         dica.setAlignmentX(Component.CENTER_ALIGNMENT);
         dica.setBorder(BorderFactory.createEmptyBorder(25, 0, 0, 0));
         painelConteudo.add(dica);
@@ -181,12 +194,18 @@ public class CampoMinadoView extends JFrame {
     private JPanel criarPainelOpcoes() {
         JPanel painel = new JPanel();
         painel.setLayout(new BoxLayout(painel, BoxLayout.Y_AXIS));
-        painel.setBackground(COR_FUNDO);
+        painel.setBackground(corFundo);
         painel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JPanel linha1 = criarLinhaSelecao("Tema de fundo:", TEMAS_FUNDO);
         comboTemaFundo = (JComboBox<String>) linha1.getClientProperty("combo");
+        comboTemaFundo.setSelectedItem(detectarTemaFundoDoSistema());
         painel.add(linha1);
+        painel.add(Box.createVerticalStrut(10));
+
+        JPanel linhaVisual = criarLinhaSelecao("Tema visual:", TEMAS_VISUAIS);
+        comboTemaVisual = (JComboBox<String>) linhaVisual.getClientProperty("combo");
+        painel.add(linhaVisual);
         painel.add(Box.createVerticalStrut(10));
 
         JPanel linha2 = criarLinhaSelecao("Cor do tabuleiro:", TEMAS_TABULEIRO);
@@ -200,12 +219,12 @@ public class CampoMinadoView extends JFrame {
         painel.add(Box.createVerticalStrut(10));
 
         JButton btnTutorial = new JButton("Ver tutorial");
-        btnTutorial.setFont(FONTE_NORMAL);
-        btnTutorial.setForeground(COR_TEXTO_PRINCIPAL);
-        btnTutorial.setBackground(COR_FUNDO_CLARO);
+        btnTutorial.setFont(fonteNormal);
+        btnTutorial.setForeground(corTextoPrincipal);
+        btnTutorial.setBackground(corFundoClaro);
         btnTutorial.setFocusPainted(false);
         btnTutorial.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(COR_BORDA),
+                BorderFactory.createLineBorder(corBorda),
                 BorderFactory.createEmptyBorder(8, 16, 8, 16)
         ));
         btnTutorial.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -213,12 +232,12 @@ public class CampoMinadoView extends JFrame {
         btnTutorial.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                btnTutorial.setBackground(COR_CARD_HOVER);
+                btnTutorial.setBackground(corCardHover);
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                btnTutorial.setBackground(COR_FUNDO_CLARO);
+                btnTutorial.setBackground(corFundoClaro);
             }
         });
         painel.add(btnTutorial);
@@ -228,19 +247,19 @@ public class CampoMinadoView extends JFrame {
 
     private JPanel criarLinhaSelecao(String texto, String[] opcoes) {
         JPanel painel = new JPanel(new BorderLayout(10, 0));
-        painel.setBackground(COR_FUNDO);
+        painel.setBackground(corFundo);
         painel.setMaximumSize(new Dimension(320, 40));
 
         JLabel lbl = new JLabel(texto);
-        lbl.setFont(FONTE_PEQUENA);
-        lbl.setForeground(COR_TEXTO_SECUNDARIO);
+        lbl.setFont(fontePequena);
+        lbl.setForeground(corTextoSecundario);
         painel.add(lbl, BorderLayout.WEST);
 
         JComboBox<String> combo = new JComboBox<>(opcoes);
-        combo.setFont(FONTE_PEQUENA);
-        combo.setBackground(COR_FUNDO_CLARO);
-        combo.setForeground(COR_TEXTO_PRINCIPAL);
-        combo.setBorder(BorderFactory.createLineBorder(COR_BORDA));
+        combo.setFont(fontePequena);
+        combo.setBackground(corFundoClaro);
+        combo.setForeground(corTextoPrincipal);
+        combo.setBorder(BorderFactory.createLineBorder(corBorda));
         painel.add(combo, BorderLayout.EAST);
         painel.putClientProperty("combo", combo);
 
@@ -253,12 +272,12 @@ public class CampoMinadoView extends JFrame {
 
         JPanel painel = new JPanel();
         painel.setLayout(new BoxLayout(painel, BoxLayout.Y_AXIS));
-        painel.setBackground(COR_FUNDO);
+        painel.setBackground(corFundo);
         painel.setBorder(BorderFactory.createEmptyBorder(25, 25, 25, 25));
 
         JLabel titulo = new JLabel("Como jogar Campo Minado");
-        titulo.setFont(FONTE_TITULO);
-        titulo.setForeground(COR_TEXTO_PRINCIPAL);
+        titulo.setFont(fonteTitulo);
+        titulo.setForeground(corTextoPrincipal);
         titulo.setAlignmentX(Component.CENTER_ALIGNMENT);
         painel.add(titulo);
         painel.add(Box.createVerticalStrut(20));
@@ -271,9 +290,9 @@ public class CampoMinadoView extends JFrame {
                 + "6. O tempo selecionado limita a partida; se chegar a zero, você perde.\n";
 
         JTextArea area = new JTextArea(texto);
-        area.setFont(FONTE_NORMAL);
-        area.setForeground(COR_TEXTO_PRINCIPAL);
-        area.setBackground(COR_FUNDO_CLARO);
+        area.setFont(fonteNormal);
+        area.setForeground(corTextoPrincipal);
+        area.setBackground(corFundoClaro);
         area.setEditable(false);
         area.setLineWrap(true);
         area.setWrapStyleWord(true);
@@ -282,19 +301,19 @@ public class CampoMinadoView extends JFrame {
         painel.add(Box.createVerticalStrut(15));
 
         JLabel dicas = new JLabel("Dicas: use bandeiras para marcar minas e tente abrir áreas sem números.");
-        dicas.setFont(FONTE_PEQUENA);
-        dicas.setForeground(COR_TEXTO_SECUNDARIO);
+        dicas.setFont(fontePequena);
+        dicas.setForeground(corTextoSecundario);
         dicas.setAlignmentX(Component.CENTER_ALIGNMENT);
         painel.add(dicas);
         painel.add(Box.createVerticalStrut(25));
 
         JButton voltar = new JButton("Voltar");
-        voltar.setFont(FONTE_NORMAL);
-        voltar.setForeground(COR_TEXTO_PRINCIPAL);
-        voltar.setBackground(COR_FUNDO_CLARO);
+        voltar.setFont(fonteNormal);
+        voltar.setForeground(corTextoPrincipal);
+        voltar.setBackground(corFundoClaro);
         voltar.setFocusPainted(false);
         voltar.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(COR_BORDA),
+                BorderFactory.createLineBorder(corBorda),
                 BorderFactory.createEmptyBorder(8, 16, 8, 16)
         ));
         voltar.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -331,7 +350,28 @@ public class CampoMinadoView extends JFrame {
         return 0;
     }
 
+    /**
+     * Detecta a aparência inicial sugerida pelo sistema/LAF atual.
+     * Swing não expõe uma API multiplataforma única para o tema claro/escuro,
+     * então usamos a cor de fundo do Look & Feel como sinal principal.
+     */
+    private String detectarTemaFundoDoSistema() {
+        Color fundoSistema = UIManager.getColor("Panel.background");
+        if (fundoSistema == null) {
+            fundoSistema = UIManager.getColor("control");
+        }
+        if (fundoSistema == null) {
+            return "Claro";
+        }
+
+        int luminosidade = (299 * fundoSistema.getRed()
+                + 587 * fundoSistema.getGreen()
+                + 114 * fundoSistema.getBlue()) / 1000;
+        return luminosidade < 128 ? "Escuro" : "Claro";
+    }
+
     public void aplicarTemaSelecionado() {
+        // Primeiro aplica as escolhas de fundo/tabuleiro que já existiam.
         if (comboTemaFundo != null) {
             String tema = (String) comboTemaFundo.getSelectedItem();
             if ("Claro".equals(tema)) {
@@ -393,55 +433,165 @@ public class CampoMinadoView extends JFrame {
             }
         }
 
+        aplicarTemaVisualSelecionado();
         getContentPane().setBackground(corFundo);
+    }
+
+    /**
+     * Temas visuais pertencem exclusivamente à View: alteram apenas cores
+     * e fontes usadas para desenhar a interface.
+     */
+    private void aplicarTemaVisualSelecionado() {
+        fonteCelula = FONTE_CELULA;
+        fonteTitulo = FONTE_TITULO;
+        fonteSubtitulo = FONTE_SUBTITULO;
+        fonteNormal = FONTE_NORMAL;
+        fonteNumero = FONTE_NUMERO;
+        fontePequena = FONTE_PEQUENA;
+        corMina = COR_MINA;
+        corVitoria = COR_VITORIA;
+        corBandeira = COR_BANDEIRA;
+        coresNumeros = CORES_NUMEROS;
+
+        if (comboTemaVisual == null) {
+            return;
+        }
+
+        String tema = (String) comboTemaVisual.getSelectedItem();
+        boolean fundoClaro = "Claro".equals(comboTemaFundo != null
+                ? comboTemaFundo.getSelectedItem() : null);
+
+        if ("Cyberpunk Neon".equals(tema)) {
+            corDestaque = new Color(0, 190, 205);
+            corBorda = new Color(225, 30, 165);
+            corMina = new Color(225, 45, 105);
+            corVitoria = new Color(25, 180, 125);
+            corBandeira = new Color(210, 145, 20);
+            corCelulaOcultaHover = fundoClaro ? new Color(225, 205, 235) : new Color(67, 22, 91);
+            corBordaOculta = fundoClaro ? new Color(180, 60, 190) : new Color(170, 30, 210);
+            corBordaRevelada = fundoClaro ? new Color(0, 170, 190) : new Color(0, 220, 235);
+            corMinaFundo = fundoClaro ? new Color(255, 220, 235) : new Color(90, 12, 48);
+            coresNumeros = new Color[] {
+                    null, new Color(0, 155, 175), new Color(25, 160, 100),
+                    new Color(205, 35, 125), new Color(120, 55, 190),
+                    new Color(190, 105, 15), new Color(0, 130, 170),
+                    new Color(180, 50, 145), new Color(80, 70, 150)
+            };
+
+            if (fundoClaro) {
+                corFundo = new Color(248, 242, 252);
+                corFundoClaro = new Color(255, 250, 255);
+                corTextoPrincipal = new Color(45, 20, 55);
+                corTextoSecundario = new Color(100, 65, 115);
+                corCard = new Color(250, 244, 255);
+                corCardHover = new Color(238, 222, 248);
+                corCelulaOculta = new Color(232, 218, 240);
+                corCelulaRevelada = new Color(255, 255, 255);
+                corTextoSobreRevelada = new Color(45, 25, 55);
+            } else {
+                corFundo = new Color(18, 8, 30);
+                corFundoClaro = new Color(31, 14, 48);
+                corTextoPrincipal = new Color(245, 225, 255);
+                corTextoSecundario = new Color(190, 150, 210);
+                corCard = new Color(37, 15, 55);
+                corCardHover = new Color(57, 20, 80);
+                corCelulaOculta = new Color(39, 16, 61);
+                corCelulaRevelada = new Color(58, 29, 76);
+                corTextoSobreRevelada = new Color(235, 245, 255);
+            }
+        } else if ("Terminal Retro".equals(tema)) {
+            corDestaque = new Color(35, 180, 55);
+            corBorda = new Color(40, 145, 50);
+            corMina = new Color(190, 45, 45);
+            corVitoria = new Color(45, 190, 65);
+            corBandeira = new Color(125, 165, 45);
+            corCelulaOcultaHover = fundoClaro ? new Color(205, 235, 205) : new Color(12, 52, 12);
+            corBordaOculta = fundoClaro ? new Color(45, 160, 55) : new Color(55, 180, 55);
+            corBordaRevelada = fundoClaro ? new Color(70, 155, 70) : new Color(70, 210, 70);
+            corMinaFundo = fundoClaro ? new Color(250, 220, 220) : new Color(55, 15, 15);
+            coresNumeros = new Color[] {
+                    null, new Color(25, 145, 40), new Color(35, 160, 50),
+                    new Color(175, 40, 40), new Color(70, 100, 55),
+                    new Color(125, 110, 30), new Color(25, 125, 55),
+                    new Color(80, 125, 45), new Color(60, 100, 65)
+            };
+            fonteCelula = new Font(Font.MONOSPACED, Font.BOLD, 20);
+            fonteTitulo = new Font(Font.MONOSPACED, Font.BOLD, 28);
+            fonteSubtitulo = new Font(Font.MONOSPACED, Font.BOLD, 16);
+            fonteNormal = new Font(Font.MONOSPACED, Font.PLAIN, 14);
+            fonteNumero = new Font(Font.MONOSPACED, Font.BOLD, 18);
+            fontePequena = new Font(Font.MONOSPACED, Font.PLAIN, 12);
+
+            if (fundoClaro) {
+                corFundo = new Color(244, 249, 244);
+                corFundoClaro = new Color(252, 255, 252);
+                corTextoPrincipal = new Color(20, 75, 25);
+                corTextoSecundario = new Color(45, 115, 50);
+                corCard = new Color(240, 248, 240);
+                corCardHover = new Color(220, 238, 220);
+                corCelulaOculta = new Color(215, 235, 215);
+                corCelulaRevelada = new Color(255, 255, 255);
+                corTextoSobreRevelada = new Color(20, 70, 25);
+            } else {
+                corFundo = new Color(5, 12, 5);
+                corFundoClaro = new Color(10, 25, 10);
+                corTextoPrincipal = new Color(125, 255, 125);
+                corTextoSecundario = new Color(70, 190, 70);
+                corCard = new Color(8, 22, 8);
+                corCardHover = new Color(15, 40, 15);
+                corCelulaOculta = new Color(8, 32, 8);
+                corCelulaRevelada = new Color(15, 45, 15);
+                corTextoSobreRevelada = new Color(125, 255, 125);
+            }
+        }
     }
 
     private JPanel criarCardDificuldade(String titulo, String dimensao, String minasTexto,
                                          int linhas, int colunas, int minas) {
         JPanel card = new JPanel();
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.setBackground(COR_CARD);
+        card.setBackground(corCard);
         card.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(COR_BORDA, 1),
+                BorderFactory.createLineBorder(corBorda, 1),
                 BorderFactory.createEmptyBorder(20, 25, 20, 25)
         ));
         card.setCursor(new Cursor(Cursor.HAND_CURSOR));
         card.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel lblTitulo = new JLabel(titulo);
-        lblTitulo.setFont(FONTE_SUBTITULO);
-        lblTitulo.setForeground(COR_DESTAQUE);
+        lblTitulo.setFont(fonteSubtitulo);
+        lblTitulo.setForeground(corDestaque);
         lblTitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
         card.add(lblTitulo);
 
         JLabel lblDim = new JLabel(dimensao);
         lblDim.setFont(new Font("Segoe UI", Font.BOLD, 22));
-        lblDim.setForeground(COR_TEXTO_PRINCIPAL);
+        lblDim.setForeground(corTextoPrincipal);
         lblDim.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblDim.setBorder(BorderFactory.createEmptyBorder(8, 0, 4, 0));
         card.add(lblDim);
 
         JLabel lblMinas = new JLabel(EMOJI_BOMBA + " " + minasTexto);
-        lblMinas.setFont(FONTE_NORMAL);
-        lblMinas.setForeground(COR_TEXTO_SECUNDARIO);
+        lblMinas.setFont(fonteNormal);
+        lblMinas.setForeground(corTextoSecundario);
         lblMinas.setAlignmentX(Component.CENTER_ALIGNMENT);
         card.add(lblMinas);
 
         card.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                card.setBackground(COR_CARD_HOVER);
+                card.setBackground(corCardHover);
                 card.setBorder(BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(COR_DESTAQUE, 2),
+                        BorderFactory.createLineBorder(corDestaque, 2),
                         BorderFactory.createEmptyBorder(19, 24, 19, 24)
                 ));
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                card.setBackground(COR_CARD);
+                card.setBackground(corCard);
                 card.setBorder(BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(COR_BORDA, 1),
+                        BorderFactory.createLineBorder(corBorda, 1),
                         BorderFactory.createEmptyBorder(20, 25, 20, 25)
                 ));
             }
@@ -494,7 +644,7 @@ public class CampoMinadoView extends JFrame {
         painel.setBorder(BorderFactory.createEmptyBorder(15, 15, 10, 15));
 
         JButton btnNovo = new JButton("← Novo Jogo");
-        btnNovo.setFont(FONTE_NORMAL);
+        btnNovo.setFont(fonteNormal);
         btnNovo.setForeground(corTextoPrincipal);
         btnNovo.setBackground(corFundoClaro);
         btnNovo.setFocusPainted(false);
@@ -521,7 +671,7 @@ public class CampoMinadoView extends JFrame {
         });
 
         labelStatus = new JLabel("Boa sorte!", SwingConstants.CENTER);
-        labelStatus.setFont(FONTE_SUBTITULO);
+        labelStatus.setFont(fonteSubtitulo);
         labelStatus.setForeground(corTextoSecundario);
 
         painel.add(btnNovo, BorderLayout.WEST);
@@ -542,8 +692,8 @@ public class CampoMinadoView extends JFrame {
         painel.setPreferredSize(new Dimension(largura, 0));
 
         JLabel lblTitulo = new JLabel("Estatísticas");
-        lblTitulo.setFont(FONTE_SUBTITULO);
-        lblTitulo.setForeground(COR_DESTAQUE);
+        lblTitulo.setFont(fonteSubtitulo);
+        lblTitulo.setForeground(corDestaque);
         lblTitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
         painel.add(lblTitulo);
         painel.add(Box.createVerticalStrut(20));
@@ -569,8 +719,8 @@ public class CampoMinadoView extends JFrame {
         painel.add(Box.createVerticalStrut(20));
 
         JLabel lblProgTitulo = new JLabel("Progresso");
-        lblProgTitulo.setFont(FONTE_NORMAL);
-        lblProgTitulo.setForeground(COR_TEXTO_SECUNDARIO);
+        lblProgTitulo.setFont(fonteNormal);
+        lblProgTitulo.setForeground(corTextoSecundario);
         lblProgTitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
         painel.add(lblProgTitulo);
 
@@ -580,7 +730,7 @@ public class CampoMinadoView extends JFrame {
         barraProgresso.setString("0%");
         barraProgresso.setForeground(corDestaque);
         barraProgresso.setBackground(corFundo);
-        barraProgresso.setBorder(BorderFactory.createLineBorder(COR_BORDA));
+        barraProgresso.setBorder(BorderFactory.createLineBorder(corBorda));
         barraProgresso.setPreferredSize(new Dimension(150, 20));
         barraProgresso.setMaximumSize(new Dimension(150, 20));
         barraProgresso.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -590,7 +740,7 @@ public class CampoMinadoView extends JFrame {
         painel.add(Box.createVerticalGlue());
 
         JLabel lblDica = new JLabel("<html><center>\uD83D\uDDB1\uFE0F Esquerdo: revelar<br>\uD83D\uDDB1\uFE0F Direito: bandeira</center></html>");
-        lblDica.setFont(FONTE_PEQUENA);
+        lblDica.setFont(fontePequena);
         lblDica.setForeground(corTextoSecundario);
         lblDica.setAlignmentX(Component.CENTER_ALIGNMENT);
         painel.add(lblDica);
@@ -611,12 +761,12 @@ public class CampoMinadoView extends JFrame {
         painelItem.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel lblTitulo = new JLabel(titulo);
-        lblTitulo.setFont(FONTE_PEQUENA);
+        lblTitulo.setFont(fontePequena);
         lblTitulo.setForeground(corTextoSecundario);
         lblTitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel lblValor = new JLabel(valorInicial);
-        lblValor.setFont(FONTE_NUMERO);
+        lblValor.setFont(fonteNumero);
         lblValor.setForeground(corTextoPrincipal);
         lblValor.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -655,13 +805,13 @@ public class CampoMinadoView extends JFrame {
     private JButton criarBotaoCelula(int linha, int coluna) {
         JButton botao = new JButton();
         botao.setPreferredSize(new Dimension(36, 36));
-        botao.setFont(FONTE_CELULA);
+        botao.setFont(fonteCelula);
         botao.setFocusPainted(false);
         botao.setBackground(corCelulaOculta);
         botao.setForeground(corTextoPrincipal);
         botao.setMargin(new Insets(0, 0, 0, 0));
         botao.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(COR_BORDA, 1),
+                BorderFactory.createLineBorder(corBorda, 1),
                 BorderFactory.createEmptyBorder(2, 2, 2, 2)
         ));
         botao.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -682,7 +832,7 @@ public class CampoMinadoView extends JFrame {
             @Override
             public void mouseExited(MouseEvent e) {
                 if (Boolean.FALSE.equals(botao.getClientProperty("revelada"))) {
-                    botao.setBackground(COR_CELULA_OCULTA);
+                    botao.setBackground(corCelulaOculta);
                 }
             }
 
@@ -717,10 +867,10 @@ public class CampoMinadoView extends JFrame {
 
         if (leitura.isMarcada(linha, coluna)) {
             botao.setText(EMOJI_BANDEIRA);
-            botao.setForeground(COR_BANDEIRA);
-            botao.setBackground(COR_CELULA_OCULTA);
+            botao.setForeground(corBandeira);
+            botao.setBackground(corCelulaOculta);
             botao.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(COR_BANDEIRA, 1),
+                    BorderFactory.createLineBorder(corBandeira, 1),
                     BorderFactory.createEmptyBorder(2, 2, 2, 2)
             ));
             return;
@@ -728,7 +878,7 @@ public class CampoMinadoView extends JFrame {
 
         if (!leitura.isRevelada(linha, coluna)) {
             botao.setText("");
-            botao.setBackground(COR_CELULA_OCULTA);
+            botao.setBackground(corCelulaOculta);
             botao.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createLineBorder(corBordaOculta, 1),
                     BorderFactory.createEmptyBorder(2, 2, 2, 2)
@@ -739,9 +889,9 @@ public class CampoMinadoView extends JFrame {
         if (leitura.isMinada(linha, coluna)) {
             botao.setText(EMOJI_BOMBA);
             botao.setBackground(corMinaFundo);
-            botao.setForeground(COR_MINA);
+            botao.setForeground(corMina);
             botao.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(COR_MINA, 1),
+                    BorderFactory.createLineBorder(corMina, 1),
                     BorderFactory.createEmptyBorder(2, 2, 2, 2)
             ));
         } else {
@@ -758,7 +908,7 @@ public class CampoMinadoView extends JFrame {
                 botao.setForeground(corTextoSobreRevelada);
             } else {
                 botao.setText(String.valueOf(vizinhas));
-                botao.setForeground(CORES_NUMEROS[vizinhas]);
+                botao.setForeground(coresNumeros[vizinhas]);
             }
         }
     }
@@ -789,31 +939,31 @@ public class CampoMinadoView extends JFrame {
             } else if (progresso < 70) {
                 barraProgresso.setForeground(new Color(220, 180, 60));
             } else {
-                barraProgresso.setForeground(COR_VITORIA);
+                barraProgresso.setForeground(corVitoria);
             }
         }
     }
 
     public void mostrarDerrota() {
         labelStatus.setText(EMOJI_EXPLOSAO + " Você perdeu!");
-        labelStatus.setForeground(COR_MINA);
+        labelStatus.setForeground(corMina);
     }
 
     public void mostrarVitoria() {
         labelStatus.setText(EMOJI_TROFEU + " Você venceu!");
-        labelStatus.setForeground(COR_VITORIA);
+        labelStatus.setForeground(corVitoria);
     }
 
     public void piscarFundoDeExplosao(boolean explodindo) {
-        getContentPane().setBackground(explodindo ? COR_MINA_FUNDO : COR_FUNDO);
+        getContentPane().setBackground(explodindo ? corMinaFundo : corFundo);
     }
 
     public void marcarMinaExplodida(int linha, int coluna) {
         JButton botao = botoes[linha][coluna];
         botao.setText(EMOJI_BOMBA);
-        botao.setForeground(COR_MINA);
-        botao.setBackground(COR_MINA_FUNDO);
-        botao.setBorder(BorderFactory.createLineBorder(COR_MINA, 1));
+        botao.setForeground(corMina);
+        botao.setBackground(corMinaFundo);
+        botao.setBorder(BorderFactory.createLineBorder(corMina, 1));
     }
 
     public void destacarCelulaVencedora(int linha, int coluna) {
