@@ -324,7 +324,7 @@ public void aoMostrarTop5() {
             return Recordes.AVANCADO;
         }
 
-        return Recordes.INICIANTE;
+        return null;
     }
 
     /**

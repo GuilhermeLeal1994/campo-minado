@@ -1856,7 +1856,8 @@ conteudo.add(
                         new String[]{
                                 "Iniciante - 9 x 9 - 10 minas",
                                 "Intermediario - 16 x 16 - 40 minas",
-                                "Avancado - 16 x 30 - 99 minas"
+                                "Avancado - 16 x 30 - 99 minas",
+                                "Modo Customizado"
                         }
                 );
 
@@ -2148,6 +2149,17 @@ conteudo.add(
             linhas = 16;
             colunas = 30;
             minas = 99;
+        } else if (selecionado == 3) {
+            int[] configuracao =
+                    solicitarConfiguracaoCustomizada();
+
+            if (configuracao == null) {
+                return;
+            }
+
+            linhas = configuracao[0];
+            colunas = configuracao[1];
+            minas = configuracao[2];
         }
 
         if (ouvinte != null) {
@@ -2157,6 +2169,142 @@ conteudo.add(
                     minas
             );
         }
+    }
+
+    /**
+     * Abre a janela de configuração do Modo Customizado.
+     *
+     * A View é responsável apenas por coletar e validar os dados da
+     * interface. Depois de validados, os valores são enviados ao
+     * Controller pelo mesmo contrato utilizado pelas dificuldades
+     * predefinidas.
+     *
+     * @return {linhas, colunas, minas} ou null quando a configuração
+     *         for cancelada.
+     */
+    private int[] solicitarConfiguracaoCustomizada() {
+
+        JTextField campoColunas =
+                new JTextField("10", 10);
+
+        JTextField campoLinhas =
+                new JTextField("10", 10);
+
+        JTextField campoMinas =
+                new JTextField("10", 10);
+
+        JPanel painel =
+                new JPanel(
+                        new GridLayout(0, 2, 8, 8)
+                );
+
+        painel.add(
+                new JLabel("Largura (colunas):")
+        );
+        painel.add(campoColunas);
+
+        painel.add(
+                new JLabel("Altura (linhas):")
+        );
+        painel.add(campoLinhas);
+
+        painel.add(
+                new JLabel("Quantidade de minas:")
+        );
+        painel.add(campoMinas);
+
+        while (true) {
+            int resultado =
+                    JOptionPane.showConfirmDialog(
+                            this,
+                            painel,
+                            "Modo Customizado",
+                            JOptionPane.OK_CANCEL_OPTION,
+                            JOptionPane.PLAIN_MESSAGE
+                    );
+
+            if (resultado != JOptionPane.OK_OPTION) {
+                return null;
+            }
+
+            String textoColunas =
+                    campoColunas.getText().trim();
+
+            String textoLinhas =
+                    campoLinhas.getText().trim();
+
+            String textoMinas =
+                    campoMinas.getText().trim();
+
+            if (textoColunas.isEmpty()
+                    || textoLinhas.isEmpty()
+                    || textoMinas.isEmpty()) {
+
+                mostrarErroConfiguracaoCustomizada(
+                        "Preencha todos os campos."
+                );
+                continue;
+            }
+
+            try {
+                int colunas =
+                        Integer.parseInt(textoColunas);
+
+                int linhas =
+                        Integer.parseInt(textoLinhas);
+
+                int minas =
+                        Integer.parseInt(textoMinas);
+
+                if (linhas < 5 || colunas < 5) {
+                    mostrarErroConfiguracaoCustomizada(
+                            "O tabuleiro deve ter no mínimo 5 x 5."
+                    );
+                    continue;
+                }
+
+                if (minas <= 0) {
+                    mostrarErroConfiguracaoCustomizada(
+                            "A quantidade de minas deve ser maior que zero."
+                    );
+                    continue;
+                }
+
+                long totalCelulas =
+                        (long) linhas * colunas;
+
+                if (minas >= totalCelulas) {
+                    mostrarErroConfiguracaoCustomizada(
+                            "A quantidade de minas deve ser menor que o total de células ("
+                                    + totalCelulas
+                                    + ")."
+                    );
+                    continue;
+                }
+
+                return new int[]{
+                        linhas,
+                        colunas,
+                        minas
+                };
+
+            } catch (NumberFormatException ex) {
+                mostrarErroConfiguracaoCustomizada(
+                        "Informe somente números inteiros válidos."
+                );
+            }
+        }
+    }
+
+    private void mostrarErroConfiguracaoCustomizada(
+            String mensagem
+    ) {
+        JOptionPane.showMessageDialog(
+                this,
+                mensagem,
+                "Configuração inválida",
+                JOptionPane.WARNING_MESSAGE
+        );
     }
 
     private JPanel encontrarPainelConfiguracoes() {

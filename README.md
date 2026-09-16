@@ -202,6 +202,34 @@ Responsável pela comunicação entre View e Model, ações do jogador, configur
 - Ordenação dos melhores tempos.
 - Manutenção dos cinco melhores resultados por dificuldade.
 
+### Etapa 4 — Modo Customizado
+
+- Inclusão do **Modo Customizado** na tela inicial.
+- Criação de uma janela de configuração para o jogador definir:
+  - Largura do tabuleiro (colunas).
+  - Altura do tabuleiro (linhas).
+  - Quantidade de minas.
+- Validação dos valores informados antes de iniciar a partida.
+- Campos vazios ou com valores inválidos não são aceitos.
+- O Modo Customizado exige tabuleiros com no mínimo **5x5**.
+- A quantidade de minas deve ser maior que zero.
+- Não é permitido utilizar uma quantidade de minas maior ou igual ao número total de células.
+- Validação contra valores numéricos excessivamente grandes e possíveis overflows no cálculo do total de células.
+- Cancelamento da janela de configuração não inicia uma nova partida.
+- Integração da configuração personalizada com o Controller através da mesma comunicação utilizada pelas dificuldades tradicionais.
+- O `Tabuleiro` passa a trabalhar de forma segura com dimensões e quantidade de minas dinâmicas.
+- O sistema mantém as regras das dificuldades predefinidas:
+  - Iniciante: 9x9, 10 minas, 2 vidas.
+  - Intermediário: 16x16, 40 minas, 3 vidas.
+  - Avançado: 16x30, 99 minas, 5 vidas.
+- Partidas customizadas utilizam **2 vidas**, sem alterar as configurações das dificuldades oficiais.
+- Partidas customizadas não são associadas indevidamente aos recordes de Iniciante, Intermediário ou Avançado.
+- O redimensionamento dinâmico da interface foi mantido compatível com os novos tamanhos de tabuleiro.
+- A implementação mantém a separação de responsabilidades da arquitetura MVC:
+  - **View:** coleta e valida os dados da customização.
+  - **Controller:** recebe a configuração e inicia a partida.
+  - **Model:** cria e mantém o estado do tabuleiro personalizado.
+
 ## Compilação
 
 A partir da pasta raiz do projeto:
