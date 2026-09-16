@@ -110,24 +110,28 @@ public class CampoMinadoController implements AcoesJogador {
             iniciarTimer();
         }
 
-        if (limiteSegundos > 0
-                && obterSegundosPassados() >= limiteSegundos) {
-            encerrarPorTempo();
-            return;
-        }
+if (limiteSegundos > 0
+        && obterSegundosPassados() >= limiteSegundos) {
+    encerrarPorTempo();
+    return;
+}
 
-        jogadas++;
+if (tabuleiro.isRevelada(linha, coluna)) {
+    return;
+}
 
-        /*
-         * O Model agora é responsável por decidir o que acontece quando
-         * uma mina é clicada. O Controller apenas aplica a jogada e
-         * aguarda o estado atualizado do Model.
-         *
-         * Se ainda houver vidas, isJogoEncerrado() continuará falso.
-         * Portanto, a partida seguirá normalmente.
-         */
-        List<int[]> reveladas =
-                tabuleiro.revelar(linha, coluna);
+jogadas++;
+
+/*
+ * O Model agora é responsável por decidir o que acontece quando
+ * uma mina é clicada. O Controller apenas aplica a jogada e
+ * aguarda o estado atualizado do Model.
+ *
+ * Se ainda houver vidas, isJogoEncerrado() continuará falso.
+ * Portanto, a partida seguirá normalmente.
+ */
+List<int[]> reveladas =
+        tabuleiro.revelar(linha, coluna);
 
         celulasReveladas =
                 contarCelulasReveladas();

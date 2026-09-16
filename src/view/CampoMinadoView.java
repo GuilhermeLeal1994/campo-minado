@@ -9,149 +9,312 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 /**
- * VIEW da arquitetura MVC: cuida só de desenhar a tela e capturar
- * interações do usuário. Nunca decide o que um clique "significa" em
- * termos de regra de jogo — ela apenas repassa o clique para quem
- * implementa {@link AcoesJogador} (o Controller) e espera ser chamada de
- * volta para atualizar o que aparece na tela.
+ * VIEW da arquitetura MVC do Campo Minado.
+ *
+ * Responsável exclusivamente pela interface gráfica, temas, animações e
+ * encaminhamento das ações do jogador para o Controller.
+ *
+ * A View não acessa o Model diretamente para tomar decisões de jogo.
  */
 public class CampoMinadoView extends JFrame {
 
+    // ================================================================
+    // Constantes visuais
+    // ================================================================
+
     private static final Color COR_FUNDO =
-            new Color(30, 30, 35);
+            new Color(18, 18, 24);
 
     private static final Color COR_FUNDO_CLARO =
-            new Color(45, 45, 52);
+            new Color(32, 32, 42);
 
     private static final Color COR_DESTAQUE =
-            new Color(70, 130, 180);
-
-    private static final Color COR_CELULA_OCULTA =
-            new Color(72, 78, 96);
-
-    private static final Color COR_CELULA_OCULTA_HOVER =
-            new Color(90, 97, 118);
-
-    private static final Color COR_BORDA_OCULTA =
-            new Color(100, 107, 128);
-
-    private static final Color COR_CELULA_REVELADA =
-            new Color(228, 228, 233);
-
-    private static final Color COR_BORDA_REVELADA =
-            new Color(195, 195, 202);
-
-    private static final Color COR_TEXTO_SOBRE_REVELADA =
-            new Color(40, 40, 45);
-
-    private static final Color COR_MINA =
-            new Color(220, 60, 60);
-
-    private static final Color COR_MINA_FUNDO =
-            new Color(60, 20, 20);
-
-    private static final Color COR_VITORIA =
-            new Color(50, 180, 80);
+            new Color(0, 255, 220);
 
     private static final Color COR_TEXTO_PRINCIPAL =
-            new Color(230, 230, 235);
+            new Color(240, 240, 245);
 
     private static final Color COR_TEXTO_SECUNDARIO =
-            new Color(150, 150, 160);
-
-    private static final Color COR_BORDA =
-            new Color(80, 80, 90);
+            new Color(165, 170, 185);
 
     private static final Color COR_CARD =
-            new Color(50, 50, 58);
+            new Color(28, 28, 38);
 
     private static final Color COR_CARD_HOVER =
+            new Color(40, 40, 52);
+
+    private static final Color COR_BORDA =
+            new Color(70, 70, 90);
+
+    private static final Color COR_CELULA_OCULTA =
+            new Color(45, 45, 58);
+
+    private static final Color COR_CELULA_OCULTA_HOVER =
+            new Color(65, 65, 82);
+
+    private static final Color COR_BORDA_OCULTA =
+            new Color(85, 85, 105);
+
+    private static final Color COR_CELULA_REVELADA =
+            new Color(28, 28, 36);
+
+    private static final Color COR_BORDA_REVELADA =
             new Color(65, 65, 78);
 
+    private static final Color COR_TEXTO_SOBRE_REVELADA =
+            new Color(235, 235, 240);
+
+    private static final Color COR_MINA_FUNDO =
+            new Color(120, 25, 35);
+
+    private static final Color COR_MINA =
+            new Color(255, 80, 95);
+
+    private static final Color COR_VITORIA =
+            new Color(90, 255, 130);
+
     private static final Color COR_BANDEIRA =
-            new Color(230, 180, 50);
+            new Color(255, 80, 170);
 
-    private static final String[] TEMAS_FUNDO = {
-            "Escuro",
-            "Claro",
-            "Campo"
+    private static final Color[] CORES_NUMEROS = {
+            new Color(70, 180, 255),
+            new Color(90, 255, 130),
+            new Color(255, 90, 100),
+            new Color(190, 100, 255),
+            new Color(255, 150, 60),
+            new Color(70, 230, 220),
+            new Color(255, 100, 190),
+            new Color(210, 210, 220)
     };
 
-    private static final String[] TEMAS_VISUAIS = {
-            "Padrão",
-            "Cyberpunk Neon",
-            "Terminal Retro"
+    private static final Color COR_FUNDO_CLARO_TEMA =
+            new Color(242, 244, 248);
+
+    private static final Color COR_CARD_CLARO_TEMA =
+            new Color(255, 255, 255);
+
+    private static final Color COR_CARD_HOVER_CLARO_TEMA =
+            new Color(235, 240, 246);
+
+    private static final Color COR_TEXTO_PRINCIPAL_CLARO_TEMA =
+            new Color(35, 38, 45);
+
+    private static final Color COR_TEXTO_SECUNDARIO_CLARO_TEMA =
+            new Color(90, 96, 108);
+
+    private static final Color COR_BORDA_CLARO_TEMA =
+            new Color(185, 192, 204);
+
+    private static final Color COR_CELULA_OCULTA_CLARO_TEMA =
+            new Color(222, 227, 235);
+
+    private static final Color COR_CELULA_OCULTA_HOVER_CLARO_TEMA =
+            new Color(205, 212, 223);
+
+    private static final Color COR_BORDA_OCULTA_CLARO_TEMA =
+            new Color(170, 178, 190);
+
+    private static final Color COR_CELULA_REVELADA_CLARO_TEMA =
+            new Color(250, 250, 252);
+
+    private static final Color COR_BORDA_REVELADA_CLARO_TEMA =
+            new Color(205, 210, 218);
+
+    private static final Color COR_TEXTO_SOBRE_REVELADA_CLARO_TEMA =
+            new Color(35, 38, 45);
+
+    private static final Color COR_MINA_FUNDO_CLARO_TEMA =
+            new Color(255, 215, 220);
+
+    private static final Color COR_MINA_CLARO_TEMA =
+            new Color(190, 30, 50);
+
+    private static final Color COR_VITORIA_CLARO_TEMA =
+            new Color(25, 145, 70);
+
+    private static final Color COR_BANDEIRA_CLARO_TEMA =
+            new Color(205, 30, 125);
+
+    private static final Color[] CORES_NUMEROS_CLARO_TEMA = {
+            new Color(20, 105, 180),
+            new Color(25, 140, 65),
+            new Color(205, 35, 50),
+            new Color(120, 55, 185),
+            new Color(190, 95, 15),
+            new Color(20, 145, 135),
+            new Color(190, 45, 135),
+            new Color(80, 85, 95)
     };
 
-    private static final String[] TEMAS_TABULEIRO = {
-            "Clássico",
-            "Noite",
-            "Verde"
-    };
+    private static final Color CYBER_FUNDO =
+            new Color(15, 5, 28);
 
-    private static final String[] TEMPOS_JOGO = {
-            "Sem limite",
-            "1 minuto",
-            "2 minutos",
-            "3 minutos",
-            "5 minutos"
-    };
+    private static final Color CYBER_FUNDO_CLARO =
+            new Color(35, 15, 52);
+
+    private static final Color CYBER_DESTAQUE =
+            new Color(0, 255, 255);
+
+    private static final Color CYBER_ROSA =
+            new Color(255, 20, 180);
+
+    private static final Color CYBER_TEXTO =
+            new Color(245, 230, 255);
+
+    private static final Color CYBER_TEXTO_SECUNDARIO =
+            new Color(190, 160, 210);
+
+    private static final Color CYBER_CARD =
+            new Color(28, 10, 45);
+
+    private static final Color CYBER_CARD_HOVER =
+            new Color(45, 15, 65);
+
+    private static final Color CYBER_BORDA =
+            new Color(130, 40, 150);
+
+    private static final Color CYBER_CELULA =
+            new Color(40, 12, 60);
+
+    private static final Color CYBER_CELULA_HOVER =
+            new Color(65, 18, 90);
+
+    private static final Color CYBER_BORDA_CELULA =
+            new Color(150, 45, 175);
+
+    private static final Color CYBER_REVELADA =
+            new Color(25, 12, 38);
+
+    private static final Color CYBER_BORDA_REVELADA =
+            new Color(100, 35, 125);
+
+    private static final Color CYBER_MINA_FUNDO =
+            new Color(100, 10, 55);
+
+    private static final Color CYBER_MINA =
+            new Color(255, 50, 150);
+
+    private static final Color CYBER_VITORIA =
+            new Color(50, 255, 160);
+
+    private static final Color CYBER_BANDEIRA =
+            new Color(255, 40, 190);
+
+    private static final Color TERMINAL_FUNDO =
+            new Color(5, 15, 5);
+
+    private static final Color TERMINAL_FUNDO_CLARO =
+            new Color(12, 28, 12);
+
+    private static final Color TERMINAL_DESTAQUE =
+            new Color(80, 255, 80);
+
+    private static final Color TERMINAL_TEXTO =
+            new Color(120, 255, 120);
+
+    private static final Color TERMINAL_TEXTO_SECUNDARIO =
+            new Color(70, 180, 70);
+
+    private static final Color TERMINAL_CARD =
+            new Color(8, 25, 8);
+
+    private static final Color TERMINAL_CARD_HOVER =
+            new Color(12, 40, 12);
+
+    private static final Color TERMINAL_BORDA =
+            new Color(35, 110, 35);
+
+    private static final Color TERMINAL_CELULA =
+            new Color(12, 35, 12);
+
+    private static final Color TERMINAL_CELULA_HOVER =
+            new Color(20, 55, 20);
+
+    private static final Color TERMINAL_BORDA_CELULA =
+            new Color(45, 135, 45);
+
+    private static final Color TERMINAL_REVELADA =
+            new Color(6, 22, 6);
+
+    private static final Color TERMINAL_BORDA_REVELADA =
+            new Color(30, 90, 30);
+
+    private static final Color TERMINAL_MINA_FUNDO =
+            new Color(80, 20, 20);
+
+    private static final Color TERMINAL_MINA =
+            new Color(255, 70, 70);
+
+    private static final Color TERMINAL_VITORIA =
+            new Color(100, 255, 100);
+
+    private static final Color TERMINAL_BANDEIRA =
+            new Color(150, 255, 80);
 
     private static final Font FONTE_CELULA =
-            new Font("Segoe UI Emoji", Font.BOLD, 20);
+            new Font("SansSerif", Font.BOLD, 16);
 
     private static final Font FONTE_TITULO =
-            new Font("Segoe UI", Font.BOLD, 28);
+            new Font("SansSerif", Font.BOLD, 30);
 
     private static final Font FONTE_SUBTITULO =
-            new Font("Segoe UI", Font.BOLD, 16);
+            new Font("SansSerif", Font.BOLD, 20);
 
     private static final Font FONTE_NORMAL =
-            new Font("Segoe UI", Font.PLAIN, 14);
+            new Font("SansSerif", Font.PLAIN, 15);
 
     private static final Font FONTE_NUMERO =
-            new Font("Consolas", Font.BOLD, 18);
+            new Font("SansSerif", Font.BOLD, 24);
 
     private static final Font FONTE_PEQUENA =
-            new Font("Segoe UI", Font.PLAIN, 12);
+            new Font("SansSerif", Font.PLAIN, 13);
+
+    private static final Font FONTE_TERMINAL_CELULA =
+            new Font("Monospaced", Font.BOLD, 16);
+
+    private static final Font FONTE_TERMINAL_TITULO =
+            new Font("Monospaced", Font.BOLD, 28);
+
+    private static final Font FONTE_TERMINAL_SUBTITULO =
+            new Font("Monospaced", Font.BOLD, 18);
+
+    private static final Font FONTE_TERMINAL_NORMAL =
+            new Font("Monospaced", Font.PLAIN, 14);
+
+    private static final Font FONTE_TERMINAL_NUMERO =
+            new Font("Monospaced", Font.BOLD, 22);
+
+    private static final Font FONTE_TERMINAL_PEQUENA =
+            new Font("Monospaced", Font.PLAIN, 12);
 
     private static final String EMOJI_BOMBA =
             "\uD83D\uDCA3";
 
+    private static final String EMOJI_RELOGIO =
+            "\u23F1\uFE0F";
+
+    private static final String EMOJI_ICONE_ESTATISTICA =
+            "\uD83D\uDCCA";
+
+    private static final String EMOJI_JOGADA =
+            "\uD83C\uDFAF";
+
     private static final String EMOJI_BANDEIRA =
             "\uD83D\uDEA9";
 
-    private static final String EMOJI_TROFEU =
-            "\uD83C\uDFC6";
+    private static final String EMOJI_VIDA =
+            "\u2764\uFE0F";
 
-    private static final String EMOJI_EXPLOSAO =
-            "\uD83D\uDCA5";
-
-    private static final String EMOJI_RELOGIO =
-            "\u23F1";
-
-    private static final String EMOJI_JOGADA =
-            "\uD83D\uDC46";
-
-    private static final String EMOJI_ICONE_ESTATISTICA =
-            EMOJI_BOMBA;
-
-    private static final Color[] CORES_NUMEROS = {
-            null,
-            new Color(25, 118, 210),
-            new Color(56, 142, 60),
-            new Color(211, 47, 47),
-            new Color(13, 71, 161),
-            new Color(136, 14, 14),
-            new Color(0, 131, 143),
-            new Color(33, 33, 33),
-            new Color(97, 97, 97)
-    };
+    // ================================================================
+    // Componentes
+    // ================================================================
 
     private AcoesJogador ouvinte;
-    private JButton[][] botoes;
-    private JLabel labelStatus;
 
+    private JPanel painelPrincipal;
+    private JPanel painelTabuleiro;
+
+    private JLabel labelStatus;
     private JLabel lblTempo;
     private JLabel lblMinasRestantes;
     private JLabel lblCelulasReveladas;
@@ -192,693 +355,1012 @@ public class CampoMinadoView extends JFrame {
     private Font fonteNumero = FONTE_NUMERO;
     private Font fontePequena = FONTE_PEQUENA;
 
-    public CampoMinadoView() {
-        super("Campo Minado");
+    // Controle da tela cheia (F11). A View mantém o estado visual da janela
+    // sem alterar nenhuma regra do jogo ou depender do Controller.
+    private boolean telaCheia = false;
+    private Rectangle limitesJanelaNormal;
+    private boolean resizableAntesDaTelaCheia;
+    private GraphicsDevice dispositivoTelaCheia;
 
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        getContentPane().setBackground(COR_FUNDO);
-        setLocationRelativeTo(null);
-        setResizable(false);
+    private static final String CHAVE_FONTE_ORIGINAL =
+            "fonteOriginalTelaCheia";
+
+    private static final String CHAVE_PREFERIDO_ORIGINAL =
+            "preferidoOriginalTelaCheia";
+
+    private static final String CHAVE_MINIMO_ORIGINAL =
+            "minimoOriginalTelaCheia";
+
+    private static final String CHAVE_MAXIMO_ORIGINAL =
+            "maximoOriginalTelaCheia";
+
+    public CampoMinadoView() {
+    super("Campo Minado");
+    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    getContentPane().setBackground(COR_FUNDO);
+    setResizable(false);
+    configurarAtalhoTelaCheia();
+
+    setMinimumSize(new Dimension(900, 700));
+    setSize(1000, 750);
+    setLocationRelativeTo(null);
+}
+    /**
+     * Configura o atalho global da janela para alternar o modo de tela cheia
+     * com F11. O binding fica no {@link JRootPane} para continuar funcionando
+     * mesmo quando um botão, combo ou outro componente estiver em foco.
+     */
+    private void configurarAtalhoTelaCheia() {
+        KeyStroke teclaF11 =
+                KeyStroke.getKeyStroke("F11");
+
+        getRootPane()
+                .getInputMap(
+                        JComponent.WHEN_IN_FOCUSED_WINDOW
+                )
+                .put(
+                        teclaF11,
+                        "alternarTelaCheia"
+                );
+
+        getRootPane()
+                .getActionMap()
+                .put(
+                        "alternarTelaCheia",
+                        new AbstractAction() {
+                            @Override
+                            public void actionPerformed(
+                                    java.awt.event.ActionEvent e
+                            ) {
+                                alternarTelaCheia();
+                            }
+                        }
+                );
     }
 
-    public void setOuvinte(AcoesJogador ouvinte) {
+    /** Alterna entre o tamanho normal da janela e a tela cheia. */
+    private void alternarTelaCheia() {
+        if (telaCheia) {
+            sairDaTelaCheia();
+        } else {
+            entrarEmTelaCheia();
+        }
+    }
+
+    /**
+     * Entra em tela cheia usando o dispositivo gráfico principal. A interface
+     * é ampliada proporcionalmente para aproveitar a área disponível sem
+     * deformar fontes ou componentes.
+     */
+    private void entrarEmTelaCheia() {
+        if (telaCheia) {
+            return;
+        }
+
+        if (getGraphicsConfiguration() == null) {
+            return;
+        }
+
+        salvarTamanhosOriginais(
+                getContentPane()
+        );
+
+        limitesJanelaNormal =
+                getBounds();
+
+        resizableAntesDaTelaCheia =
+                isResizable();
+
+        dispositivoTelaCheia =
+                getGraphicsConfiguration().getDevice();
+
+        Rectangle areaTela =
+                dispositivoTelaCheia
+                        .getDefaultConfiguration()
+                        .getBounds();
+
+        Insets insets =
+                Toolkit.getDefaultToolkit()
+                        .getScreenInsets(
+                                dispositivoTelaCheia
+                                        .getDefaultConfiguration()
+                        );
+
+        int larguraDisponivel =
+                Math.max(
+                        1,
+                        areaTela.width
+                                - insets.left
+                                - insets.right
+                );
+
+        int alturaDisponivel =
+                Math.max(
+                        1,
+                        areaTela.height
+                                - insets.top
+                                - insets.bottom
+                );
+
+        int larguraAtual =
+                Math.max(
+                        1,
+                        getWidth()
+                );
+
+        int alturaAtual =
+                Math.max(
+                        1,
+                        getHeight()
+                );
+
+        double escalaHorizontal =
+                (double) larguraDisponivel
+                        / larguraAtual;
+
+        double escalaVertical =
+                (double) alturaDisponivel
+                        / alturaAtual;
+
+        double escala =
+                Math.max(
+                        1.0,
+                        Math.min(
+                                escalaHorizontal,
+                                escalaVertical
+                        )
+                );
+
+        aplicarEscalaTelaCheia(
+                escala
+        );
+
+        dispose();
+
+        setUndecorated(true);
+        setResizable(false);
+
+        if (dispositivoTelaCheia.isFullScreenSupported()) {
+            dispositivoTelaCheia.setFullScreenWindow(this);
+        } else {
+            setBounds(
+                    areaTela.x + insets.left,
+                    areaTela.y + insets.top,
+                    larguraDisponivel,
+                    alturaDisponivel
+            );
+
+            setVisible(true);
+        }
+
+        telaCheia = true;
+
+        atualizarTextoBotaoTelaCheia();
+
+        revalidate();
+        repaint();
+    }
+
+    /**
+     * Sai do modo de tela cheia e restaura as dimensões originais da interface.
+     */
+    private void sairDaTelaCheia() {
+        if (!telaCheia) {
+            return;
+        }
+
+        if (dispositivoTelaCheia != null
+                && dispositivoTelaCheia.isFullScreenSupported()
+                && dispositivoTelaCheia.getFullScreenWindow() == this) {
+            dispositivoTelaCheia.setFullScreenWindow(null);
+        }
+
+        dispose();
+
+        setUndecorated(false);
+
+        restaurarEscalaTelaCheia();
+
+        setResizable(
+                resizableAntesDaTelaCheia
+        );
+
+        if (limitesJanelaNormal != null) {
+            setBounds(
+                    limitesJanelaNormal
+            );
+        }
+
+        setVisible(true);
+
+        telaCheia = false;
+
+        atualizarTextoBotaoTelaCheia();
+
+        revalidate();
+        repaint();
+    }
+
+    /**
+     * Percorre os componentes da interface e guarda os tamanhos e fontes
+     * necessários para restaurar a View após a saída da tela cheia.
+     */
+    private void salvarTamanhosOriginais(
+            Component componente
+    ) {
+        if (componente == null) {
+            return;
+        }
+
+        if (componente instanceof JComponent) {
+            JComponent jc =
+                    (JComponent) componente;
+
+            if (jc.getClientProperty(
+                    CHAVE_FONTE_ORIGINAL
+            ) == null) {
+                jc.putClientProperty(
+                        CHAVE_FONTE_ORIGINAL,
+                        jc.getFont()
+                );
+            }
+
+            if (jc.getClientProperty(
+                    CHAVE_PREFERIDO_ORIGINAL
+            ) == null) {
+                jc.putClientProperty(
+                        CHAVE_PREFERIDO_ORIGINAL,
+                        jc.getPreferredSize()
+                );
+            }
+
+            if (jc.getClientProperty(
+                    CHAVE_MINIMO_ORIGINAL
+            ) == null) {
+                jc.putClientProperty(
+                        CHAVE_MINIMO_ORIGINAL,
+                        jc.getMinimumSize()
+                );
+            }
+
+            if (jc.getClientProperty(
+                    CHAVE_MAXIMO_ORIGINAL
+            ) == null) {
+                jc.putClientProperty(
+                        CHAVE_MAXIMO_ORIGINAL,
+                        jc.getMaximumSize()
+                );
+            }
+        }
+
+        if (componente instanceof Container) {
+            Component[] filhos =
+                    ((Container) componente)
+                            .getComponents();
+
+            for (Component filho : filhos) {
+                salvarTamanhosOriginais(
+                        filho
+                );
+            }
+        }
+    }
+
+    /**
+     * Aplica uma escala uniforme aos componentes visuais da janela.
+     */
+    private void aplicarEscalaTelaCheia(
+            double escala
+    ) {
+        escalarComponente(
+                getContentPane(),
+                escala
+        );
+    }
+
+    private void escalarComponente(
+            Component componente,
+            double escala
+    ) {
+        if (componente instanceof JComponent) {
+            JComponent jc =
+                    (JComponent) componente;
+
+            Object fonteOriginal =
+                    jc.getClientProperty(
+                            CHAVE_FONTE_ORIGINAL
+                    );
+
+            if (fonteOriginal instanceof Font) {
+                Font fonte =
+                        (Font) fonteOriginal;
+
+                float tamanho =
+                        (float) (
+                                fonte.getSize2D()
+                                        * escala
+                        );
+
+                jc.setFont(
+                        fonte.deriveFont(
+                                Math.max(
+                                        1f,
+                                        tamanho
+                                )
+                        )
+                );
+            }
+
+            Object preferido =
+                    jc.getClientProperty(
+                            CHAVE_PREFERIDO_ORIGINAL
+                    );
+
+            if (preferido instanceof Dimension) {
+                jc.setPreferredSize(
+                        escalarDimension(
+                                (Dimension) preferido,
+                                escala
+                        )
+                );
+            }
+
+            Object minimo =
+                    jc.getClientProperty(
+                            CHAVE_MINIMO_ORIGINAL
+                    );
+
+            if (minimo instanceof Dimension) {
+                jc.setMinimumSize(
+                        escalarDimension(
+                                (Dimension) minimo,
+                                escala
+                        )
+                );
+            }
+
+            Object maximo =
+                    jc.getClientProperty(
+                            CHAVE_MAXIMO_ORIGINAL
+                    );
+
+            if (maximo instanceof Dimension) {
+                jc.setMaximumSize(
+                        escalarDimension(
+                                (Dimension) maximo,
+                                escala
+                        )
+                );
+            }
+        }
+
+        if (componente instanceof Container) {
+            Component[] filhos =
+                    ((Container) componente)
+                            .getComponents();
+
+            for (Component filho : filhos) {
+                escalarComponente(
+                        filho,
+                        escala
+                );
+            }
+        }
+    }
+
+    private void restaurarEscalaTelaCheia() {
+        restaurarComponente(
+                getContentPane()
+        );
+    }
+
+    private void restaurarComponente(
+            Component componente
+    ) {
+        if (componente instanceof JComponent) {
+            JComponent jc =
+                    (JComponent) componente;
+
+            Object fonteOriginal =
+                    jc.getClientProperty(
+                            CHAVE_FONTE_ORIGINAL
+                    );
+
+            if (fonteOriginal instanceof Font) {
+                jc.setFont(
+                        (Font) fonteOriginal
+                );
+            }
+
+            Object preferido =
+                    jc.getClientProperty(
+                            CHAVE_PREFERIDO_ORIGINAL
+                    );
+
+            if (preferido instanceof Dimension) {
+                jc.setPreferredSize(
+                        (Dimension) preferido
+                );
+            }
+
+            Object minimo =
+                    jc.getClientProperty(
+                            CHAVE_MINIMO_ORIGINAL
+                    );
+
+            if (minimo instanceof Dimension) {
+                jc.setMinimumSize(
+                        (Dimension) minimo
+                );
+            }
+
+            Object maximo =
+                    jc.getClientProperty(
+                            CHAVE_MAXIMO_ORIGINAL
+                    );
+
+            if (maximo instanceof Dimension) {
+                jc.setMaximumSize(
+                        (Dimension) maximo
+                );
+            }
+        }
+
+        if (componente instanceof Container) {
+            Component[] filhos =
+                    ((Container) componente)
+                            .getComponents();
+
+            for (Component filho : filhos) {
+                restaurarComponente(
+                        filho
+                );
+            }
+        }
+    }
+
+    private Dimension escalarDimension(
+            Dimension dimension,
+            double escala
+    ) {
+        return new Dimension(
+                Math.max(
+                        1,
+                        (int) Math.round(
+                                dimension.width * escala
+                        )
+                ),
+                Math.max(
+                        1,
+                        (int) Math.round(
+                                dimension.height * escala
+                        )
+                )
+        );
+    }
+
+    private void atualizarTextoBotaoTelaCheia() {
+        JButton botao =
+                localizarBotaoTelaCheia(
+                        getContentPane()
+                );
+
+        if (botao != null) {
+            botao.setText(
+                    telaCheia
+                            ? "Sair da tela cheia"
+                            : "Tela cheia"
+            );
+        }
+    }
+
+    private JButton localizarBotaoTelaCheia(
+            Component componente
+    ) {
+        if (componente instanceof JButton) {
+            JButton botao =
+                    (JButton) componente;
+
+            if (Boolean.TRUE.equals(
+                    botao.getClientProperty(
+                            "botaoTelaCheia"
+                    )
+            )) {
+                return botao;
+            }
+        }
+
+        if (componente instanceof Container) {
+            Component[] filhos =
+                    ((Container) componente)
+                            .getComponents();
+
+            for (Component filho : filhos) {
+                JButton resultado =
+                        localizarBotaoTelaCheia(
+                                filho
+                        );
+
+                if (resultado != null) {
+                    return resultado;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    // ================================================================
+    // Comunicação com o Controller
+    // ================================================================
+
+    public void setOuvinte(
+            AcoesJogador ouvinte
+    ) {
         this.ouvinte = ouvinte;
     }
 
     // ================================================================
-    // TELA INICIAL
+    // Tema
     // ================================================================
 
-    public void mostrarTelaInicial() {
-        getContentPane().removeAll();
-        setLayout(new BorderLayout());
-
-        JPanel painelCentral =
-                new JPanel(new GridBagLayout());
-
-        painelCentral.setBackground(corFundo);
-        painelCentral.setBorder(
-                BorderFactory.createEmptyBorder(
-                        40, 60, 40, 60
-                )
-        );
-
-        JPanel painelConteudo = new JPanel();
-
-        painelConteudo.setLayout(
-                new BoxLayout(
-                        painelConteudo,
-                        BoxLayout.Y_AXIS
-                )
-        );
-
-        painelConteudo.setBackground(corFundo);
-        painelConteudo.setAlignmentX(
-                Component.CENTER_ALIGNMENT
-        );
-
-        JLabel titulo =
-                new JLabel(
-                        EMOJI_BOMBA + " Campo Minado"
-                );
-
-        titulo.setFont(fonteTitulo);
-        titulo.setForeground(corTextoPrincipal);
-        titulo.setAlignmentX(
-                Component.CENTER_ALIGNMENT
-        );
-
-        painelConteudo.add(titulo);
-
-        JLabel subtitulo =
-                new JLabel(
-                        "Escolha sua dificuldade"
-                );
-
-        subtitulo.setFont(fonteNormal);
-        subtitulo.setForeground(
-                corTextoSecundario
-        );
-
-        subtitulo.setAlignmentX(
-                Component.CENTER_ALIGNMENT
-        );
-
-        subtitulo.setBorder(
-                BorderFactory.createEmptyBorder(
-                        10, 0, 30, 0
-                )
-        );
-
-        painelConteudo.add(subtitulo);
-
-        JPanel painelCards =
-                new JPanel(
-                        new GridLayout(1, 3, 15, 0)
-                );
-
-        painelCards.setBackground(corFundo);
-        painelCards.setAlignmentX(
-                Component.CENTER_ALIGNMENT
-        );
-
-        painelCards.add(
-                criarCardDificuldade(
-                        "Iniciante",
-                        "9 × 9",
-                        "10 minas",
-                        9,
-                        9,
-                        10
-                )
-        );
-
-        painelCards.add(
-                criarCardDificuldade(
-                        "Intermediário",
-                        "16 × 16",
-                        "40 minas",
-                        16,
-                        16,
-                        40
-                )
-        );
-
-        painelCards.add(
-                criarCardDificuldade(
-                        "Avançado",
-                        "16 × 30",
-                        "99 minas",
-                        16,
-                        30,
-                        99
-                )
-        );
-
-        painelConteudo.add(painelCards);
-
-        JLabel dica =
-                new JLabel(
-                        "<html><center>\uD83D\uDDB1\uFE0F "
-                                + "Esquerdo: revelar • "
-                                + "Direito: bandeira</center></html>"
-                );
-
-        dica.setFont(fontePequena);
-        dica.setForeground(corTextoSecundario);
-        dica.setAlignmentX(
-                Component.CENTER_ALIGNMENT
-        );
-
-        dica.setBorder(
-                BorderFactory.createEmptyBorder(
-                        25, 0, 0, 0
-                )
-        );
-
-        painelConteudo.add(dica);
-        painelConteudo.add(
-                Box.createVerticalStrut(20)
-        );
-
-        painelConteudo.add(
-                criarPainelOpcoes()
-        );
-
-        painelCentral.add(painelConteudo);
-
-        add(
-                painelCentral,
-                BorderLayout.CENTER
-        );
-
-        pack();
-        setLocationRelativeTo(null);
-        revalidate();
-        repaint();
-    }
-
-    private JPanel criarPainelOpcoes() {
-        JPanel painel = new JPanel();
-
-        painel.setLayout(
-                new BoxLayout(
-                        painel,
-                        BoxLayout.Y_AXIS
-                )
-        );
-
-        painel.setBackground(corFundo);
-        painel.setAlignmentX(
-                Component.CENTER_ALIGNMENT
-        );
-
-        JPanel linha1 =
-                criarLinhaSelecao(
-                        "Tema de fundo:",
-                        TEMAS_FUNDO
-                );
-
-        comboTemaFundo =
-                (JComboBox<String>)
-                        linha1.getClientProperty(
-                                "combo"
-                        );
-
-        comboTemaFundo.setSelectedItem(
-                detectarTemaFundoDoSistema()
-        );
-
-        painel.add(linha1);
-        painel.add(
-                Box.createVerticalStrut(10)
-        );
-
-        JPanel linhaVisual =
-                criarLinhaSelecao(
-                        "Tema visual:",
-                        TEMAS_VISUAIS
-                );
-
-        comboTemaVisual =
-                (JComboBox<String>)
-                        linhaVisual.getClientProperty(
-                                "combo"
-                        );
-
-        painel.add(linhaVisual);
-        painel.add(
-                Box.createVerticalStrut(10)
-        );
-
-        JPanel linha2 =
-                criarLinhaSelecao(
-                        "Cor do tabuleiro:",
-                        TEMAS_TABULEIRO
-                );
-
-        comboTemaTabuleiro =
-                (JComboBox<String>)
-                        linha2.getClientProperty(
-                                "combo"
-                        );
-
-        painel.add(linha2);
-        painel.add(
-                Box.createVerticalStrut(10)
-        );
-
-        JPanel linha3 =
-                criarLinhaSelecao(
-                        "Tempo rápido:",
-                        TEMPOS_JOGO
-                );
-
-        comboTempo =
-                (JComboBox<String>)
-                        linha3.getClientProperty(
-                                "combo"
-                        );
-
-        painel.add(linha3);
-        painel.add(
-                Box.createVerticalStrut(10)
-        );
-
-        JButton btnTutorial =
-                new JButton("Ver tutorial");
-
-        btnTutorial.setFont(fonteNormal);
-        btnTutorial.setForeground(
-                corTextoPrincipal
-        );
-        btnTutorial.setBackground(
-                corFundoClaro
-        );
-        btnTutorial.setFocusPainted(false);
-
-        btnTutorial.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(
-                                corBorda
-                        ),
-                        BorderFactory.createEmptyBorder(
-                                8, 16, 8, 16
-                        )
-                )
-        );
-
-        btnTutorial.setCursor(
-                new Cursor(
-                        Cursor.HAND_CURSOR
-                )
-        );
-
-        btnTutorial.addActionListener(
-                e -> mostrarTutorial()
-        );
-
-        btnTutorial.addMouseListener(
-                new MouseAdapter() {
-                    @Override
-                    public void mouseEntered(
-                            MouseEvent e) {
-                        btnTutorial.setBackground(
-                                corCardHover
-                        );
-                    }
-
-                    @Override
-                    public void mouseExited(
-                            MouseEvent e) {
-                        btnTutorial.setBackground(
-                                corFundoClaro
-                        );
-                    }
-                }
-        );
-
-        painel.add(btnTutorial);
-
-        return painel;
-    }
-
-    private JPanel criarLinhaSelecao(
-            String texto,
-            String[] opcoes) {
-
-        JPanel painel =
-                new JPanel(
-                        new BorderLayout(10, 0)
-                );
-
-        painel.setBackground(corFundo);
-        painel.setMaximumSize(
-                new Dimension(320, 40)
-        );
-
-        JLabel lbl =
-                new JLabel(texto);
-
-        lbl.setFont(fontePequena);
-        lbl.setForeground(
-                corTextoSecundario
-        );
-
-        painel.add(
-                lbl,
-                BorderLayout.WEST
-        );
-
-        JComboBox<String> combo =
-                new JComboBox<>(opcoes);
-
-        combo.setFont(fontePequena);
-        combo.setBackground(
-                corFundoClaro
-        );
-        combo.setForeground(
-                corTextoPrincipal
-        );
-
-        combo.setBorder(
-                BorderFactory.createLineBorder(
-                        corBorda
-                )
-        );
-
-        painel.add(
-                combo,
-                BorderLayout.EAST
-        );
-
-        painel.putClientProperty(
-                "combo",
-                combo
-        );
-
-        return painel;
-    }
-
-    private void mostrarTutorial() {
-        getContentPane().removeAll();
-        setLayout(new BorderLayout());
-
-        JPanel painel = new JPanel();
-
-        painel.setLayout(
-                new BoxLayout(
-                        painel,
-                        BoxLayout.Y_AXIS
-                )
-        );
-
-        painel.setBackground(corFundo);
-        painel.setBorder(
-                BorderFactory.createEmptyBorder(
-                        25, 25, 25, 25
-                )
-        );
-
-        JLabel titulo =
-                new JLabel(
-                        "Como jogar Campo Minado"
-                );
-
-        titulo.setFont(fonteTitulo);
-        titulo.setForeground(
-                corTextoPrincipal
-        );
-
-        titulo.setAlignmentX(
-                Component.CENTER_ALIGNMENT
-        );
-
-        painel.add(titulo);
-
-        painel.add(
-                Box.createVerticalStrut(20)
-        );
-
-        String texto =
-                "1. Escolha uma dificuldade e um tempo rápido.\n"
-                        + "2. Clique com o botão esquerdo para revelar uma célula.\n"
-                        + "3. Clique com o botão direito para marcar/desmarcar uma bandeira.\n"
-                        + "4. Revele todas as células sem minas para vencer.\n"
-                        + "5. Ao clicar em uma mina, você perde uma vida; o jogo só termina quando as vidas acabam.\n"
-                        + "6. O tempo selecionado limita a partida; se chegar a zero, você perde.\n";
-
-        JTextArea area =
-                new JTextArea(texto);
-
-        area.setFont(fonteNormal);
-        area.setForeground(
-                corTextoPrincipal
-        );
-        area.setBackground(
-                corFundoClaro
-        );
-        area.setEditable(false);
-        area.setLineWrap(true);
-        area.setWrapStyleWord(true);
-
-        area.setBorder(
-                BorderFactory.createEmptyBorder(
-                        10, 10, 10, 10
-                )
-        );
-
-        painel.add(area);
-
-        painel.add(
-                Box.createVerticalStrut(15)
-        );
-
-        JLabel dicas =
-                new JLabel(
-                        "Dicas: use bandeiras para marcar minas e tente abrir áreas sem números."
-                );
-
-        dicas.setFont(fontePequena);
-        dicas.setForeground(
-                corTextoSecundario
-        );
-
-        dicas.setAlignmentX(
-                Component.CENTER_ALIGNMENT
-        );
-
-        painel.add(dicas);
-
-        painel.add(
-                Box.createVerticalStrut(25)
-        );
-
-        JButton voltar =
-                new JButton("Voltar");
-
-        voltar.setFont(fonteNormal);
-        voltar.setForeground(
-                corTextoPrincipal
-        );
-        voltar.setBackground(
-                corFundoClaro
-        );
-        voltar.setFocusPainted(false);
-
-        voltar.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(
-                                corBorda
-                        ),
-                        BorderFactory.createEmptyBorder(
-                                8, 16, 8, 16
-                        )
-                )
-        );
-
-        voltar.setCursor(
-                new Cursor(
-                        Cursor.HAND_CURSOR
-                )
-        );
-
-        voltar.addActionListener(
-                e -> mostrarTelaInicial()
-        );
-
-        painel.add(voltar);
-
-        add(
-                painel,
-                BorderLayout.CENTER
-        );
-
-        pack();
-        setLocationRelativeTo(null);
-        revalidate();
-        repaint();
-    }
-
-    public int getTempoLimiteSegundosSelecionado() {
-        if (comboTempo == null) {
-            return 0;
+    /**
+     * Detecta se o sistema está usando uma aparência clara.
+     */
+    private boolean detectarTemaClaroDoSistema() {
+        try {
+            Color cor =
+                    UIManager.getColor(
+                            "Panel.background"
+                    );
+
+            if (cor == null) {
+                return false;
+            }
+
+            int luminosidade =
+                    cor.getRed()
+                            + cor.getGreen()
+                            + cor.getBlue();
+
+            return luminosidade > 500;
+        } catch (Exception ex) {
+            return false;
         }
-
-        String selecionado =
-                (String) comboTempo.getSelectedItem();
-
-        if (selecionado == null
-                || selecionado.startsWith("Sem")) {
-            return 0;
-        }
-
-        if (selecionado.contains("1 minuto")) {
-            return 60;
-        }
-
-        if (selecionado.contains("2 minutos")) {
-            return 120;
-        }
-
-        if (selecionado.contains("3 minutos")) {
-            return 180;
-        }
-
-        if (selecionado.contains("5 minutos")) {
-            return 300;
-        }
-
-        return 0;
-    }
-
-    private String detectarTemaFundoDoSistema() {
-        Color fundoSistema =
-                UIManager.getColor(
-                        "Panel.background"
-                );
-
-        if (fundoSistema == null) {
-            fundoSistema =
-                    UIManager.getColor("control");
-        }
-
-        if (fundoSistema == null) {
-            return "Claro";
-        }
-
-        int luminosidade =
-                (299 * fundoSistema.getRed()
-                        + 587 * fundoSistema.getGreen()
-                        + 114 * fundoSistema.getBlue())
-                        / 1000;
-
-        return luminosidade < 128
-                ? "Escuro"
-                : "Claro";
     }
 
     public void aplicarTemaSelecionado() {
-        if (comboTemaFundo != null) {
-            String tema =
-                    (String) comboTemaFundo.getSelectedItem();
+        String temaFundo =
+                comboTemaFundo == null
+                        ? null
+                        : (String)
+                        comboTemaFundo.getSelectedItem();
 
-            if ("Claro".equals(tema)) {
-                corFundo =
-                        new Color(245, 245, 250);
+        String temaVisual =
+                comboTemaVisual == null
+                        ? null
+                        : (String)
+                        comboTemaVisual.getSelectedItem();
 
-                corFundoClaro =
-                        new Color(230, 230, 235);
+        String temaTabuleiro =
+                comboTemaTabuleiro == null
+                        ? null
+                        : (String)
+                        comboTemaTabuleiro.getSelectedItem();
 
-                corTextoPrincipal =
-                        new Color(25, 25, 30);
-
-                corTextoSecundario =
-                        new Color(95, 95, 110);
-
-                corCard =
-                        new Color(245, 245, 250);
-
-                corCardHover =
-                        new Color(225, 225, 235);
-
-                corDestaque =
-                        new Color(35, 100, 190);
-
-                corBorda =
-                        new Color(180, 180, 190);
-
-            } else if ("Campo".equals(tema)) {
-                corFundo =
-                        new Color(25, 35, 25);
-
-                corFundoClaro =
-                        new Color(45, 65, 45);
-
-                corTextoPrincipal =
-                        new Color(220, 230, 200);
-
-                corTextoSecundario =
-                        new Color(170, 190, 150);
-
-                corCard =
-                        new Color(35, 55, 35);
-
-                corCardHover =
-                        new Color(55, 75, 55);
-
-                corDestaque =
-                        new Color(140, 200, 120);
-
-                corBorda =
-                        new Color(60, 80, 60);
-
-            } else {
-                corFundo = COR_FUNDO;
-                corFundoClaro = COR_FUNDO_CLARO;
-                corTextoPrincipal =
-                        COR_TEXTO_PRINCIPAL;
-                corTextoSecundario =
-                        COR_TEXTO_SECUNDARIO;
-                corCard = COR_CARD;
-                corCardHover =
-                        COR_CARD_HOVER;
-                corDestaque =
-                        COR_DESTAQUE;
-                corBorda = COR_BORDA;
-            }
+        if (temaFundo == null) {
+            temaFundo =
+                    detectarTemaClaroDoSistema()
+                            ? "Claro"
+                            : "Escuro";
         }
 
-        if (comboTemaTabuleiro != null) {
-            String tema =
-                    (String) comboTemaTabuleiro
-                            .getSelectedItem();
+        if (temaVisual == null) {
+            temaVisual =
+                    "Padrao";
+        }
 
-            if ("Noite".equals(tema)) {
+        if (temaTabuleiro == null) {
+            temaTabuleiro =
+                    "Padrao";
+        }
+
+        aplicarTema(
+                temaFundo,
+                temaVisual,
+                temaTabuleiro
+        );
+    }
+
+    private void aplicarTema(
+            String temaFundo,
+            String temaVisual,
+            String temaTabuleiro
+    ) {
+        boolean claro =
+                "Claro".equalsIgnoreCase(
+                        temaFundo
+                );
+
+        boolean cyberpunk =
+                temaVisual != null
+                        && temaVisual.toLowerCase()
+                        .contains("cyberpunk");
+
+        boolean terminal =
+                temaVisual != null
+                        && temaVisual.toLowerCase()
+                        .contains("terminal");
+
+        if (cyberpunk) {
+            if (claro) {
+                corFundo =
+                        new Color(245, 242, 250);
+
+                corFundoClaro =
+                        new Color(255, 248, 255);
+
+                corDestaque =
+                        CYBER_DESTAQUE;
+
+                corTextoPrincipal =
+                        new Color(45, 25, 55);
+
+                corTextoSecundario =
+                        new Color(105, 80, 120);
+
+                corCard =
+                        new Color(255, 248, 255);
+
+                corCardHover =
+                        new Color(245, 230, 250);
+
+                corBorda =
+                        new Color(175, 90, 180);
+
                 corCelulaOculta =
-                        new Color(20, 30, 45);
+                        new Color(232, 220, 238);
 
                 corCelulaOcultaHover =
-                        new Color(35, 50, 75);
+                        new Color(215, 195, 225);
 
                 corBordaOculta =
-                        new Color(70, 90, 120);
+                        new Color(165, 120, 180);
 
                 corCelulaRevelada =
-                        new Color(55, 65, 80);
+                        new Color(250, 245, 252);
 
                 corBordaRevelada =
-                        new Color(80, 95, 115);
+                        new Color(205, 175, 215);
 
                 corTextoSobreRevelada =
-                        new Color(230, 230, 240);
+                        new Color(50, 25, 60);
 
                 corMinaFundo =
-                        new Color(180, 40, 40);
+                        new Color(255, 215, 235);
 
-            } else if ("Verde".equals(tema)) {
-                corCelulaOculta =
-                        new Color(40, 70, 45);
+                corMina =
+                        CYBER_ROSA;
 
-                corCelulaOcultaHover =
-                        new Color(60, 95, 65);
+                corVitoria =
+                        new Color(20, 165, 100);
 
-                corBordaOculta =
-                        new Color(70, 105, 80);
+                corBandeira =
+                        CYBER_ROSA;
 
-                corCelulaRevelada =
-                        new Color(220, 235, 210);
-
-                corBordaRevelada =
-                        new Color(155, 175, 145);
-
-                corTextoSobreRevelada =
-                        new Color(25, 45, 25);
-
-                corMinaFundo =
-                        new Color(170, 40, 40);
-
+                coresNumeros =
+                        new Color[]{
+                                new Color(20, 140, 180),
+                                new Color(25, 150, 75),
+                                new Color(210, 35, 95),
+                                new Color(130, 50, 180),
+                                new Color(205, 100, 15),
+                                new Color(20, 145, 140),
+                                new Color(205, 30, 145),
+                                new Color(80, 70, 90)
+                        };
             } else {
+                corFundo =
+                        CYBER_FUNDO;
+
+                corFundoClaro =
+                        CYBER_FUNDO_CLARO;
+
+                corDestaque =
+                        CYBER_DESTAQUE;
+
+                corTextoPrincipal =
+                        CYBER_TEXTO;
+
+                corTextoSecundario =
+                        CYBER_TEXTO_SECUNDARIO;
+
+                corCard =
+                        CYBER_CARD;
+
+                corCardHover =
+                        CYBER_CARD_HOVER;
+
+                corBorda =
+                        CYBER_BORDA;
+
+                corCelulaOculta =
+                        CYBER_CELULA;
+
+                corCelulaOcultaHover =
+                        CYBER_CELULA_HOVER;
+
+                corBordaOculta =
+                        CYBER_BORDA_CELULA;
+
+                corCelulaRevelada =
+                        CYBER_REVELADA;
+
+                corBordaRevelada =
+                        CYBER_BORDA_REVELADA;
+
+                corTextoSobreRevelada =
+                        CYBER_TEXTO;
+
+                corMinaFundo =
+                        CYBER_MINA_FUNDO;
+
+                corMina =
+                        CYBER_MINA;
+
+                corVitoria =
+                        CYBER_VITORIA;
+
+                corBandeira =
+                        CYBER_BANDEIRA;
+
+                coresNumeros =
+                        new Color[]{
+                                new Color(40, 200, 255),
+                                new Color(70, 255, 110),
+                                new Color(255, 70, 100),
+                                new Color(200, 100, 255),
+                                new Color(255, 160, 70),
+                                new Color(70, 240, 220),
+                                new Color(255, 100, 200),
+                                new Color(220, 220, 235)
+                        };
+            }
+        } else if (terminal) {
+            if (claro) {
+                corFundo =
+                        new Color(235, 245, 235);
+
+                corFundoClaro =
+                        new Color(248, 255, 248);
+
+                corDestaque =
+                        new Color(20, 130, 35);
+
+                corTextoPrincipal =
+                        new Color(15, 65, 20);
+
+                corTextoSecundario =
+                        new Color(55, 105, 60);
+
+                corCard =
+                        new Color(248, 255, 248);
+
+                corCardHover =
+                        new Color(225, 240, 225);
+
+                corBorda =
+                        new Color(100, 145, 105);
+
+                corCelulaOculta =
+                        new Color(215, 232, 215);
+
+                corCelulaOcultaHover =
+                        new Color(195, 218, 195);
+
+                corBordaOculta =
+                        new Color(115, 155, 115);
+
+                corCelulaRevelada =
+                        new Color(245, 252, 245);
+
+                corBordaRevelada =
+                        new Color(190, 210, 190);
+
+                corTextoSobreRevelada =
+                        new Color(20, 70, 25);
+
+                corMinaFundo =
+                        new Color(250, 210, 210);
+
+                corMina =
+                        new Color(175, 35, 35);
+
+                corVitoria =
+                        new Color(20, 130, 40);
+
+                corBandeira =
+                        new Color(35, 120, 40);
+
+                coresNumeros =
+                        new Color[]{
+                                new Color(20, 95, 150),
+                                new Color(20, 125, 45),
+                                new Color(180, 35, 40),
+                                new Color(90, 50, 145),
+                                new Color(165, 90, 15),
+                                new Color(20, 110, 100),
+                                new Color(155, 40, 105),
+                                new Color(70, 80, 70)
+                        };
+            } else {
+                corFundo =
+                        TERMINAL_FUNDO;
+
+                corFundoClaro =
+                        TERMINAL_FUNDO_CLARO;
+
+                corDestaque =
+                        TERMINAL_DESTAQUE;
+
+                corTextoPrincipal =
+                        TERMINAL_TEXTO;
+
+                corTextoSecundario =
+                        TERMINAL_TEXTO_SECUNDARIO;
+
+                corCard =
+                        TERMINAL_CARD;
+
+                corCardHover =
+                        TERMINAL_CARD_HOVER;
+
+                corBorda =
+                        TERMINAL_BORDA;
+
+                corCelulaOculta =
+                        TERMINAL_CELULA;
+
+                corCelulaOcultaHover =
+                        TERMINAL_CELULA_HOVER;
+
+                corBordaOculta =
+                        TERMINAL_BORDA_CELULA;
+
+                corCelulaRevelada =
+                        TERMINAL_REVELADA;
+
+                corBordaRevelada =
+                        TERMINAL_BORDA_REVELADA;
+
+                corTextoSobreRevelada =
+                        TERMINAL_TEXTO;
+
+                corMinaFundo =
+                        TERMINAL_MINA_FUNDO;
+
+                corMina =
+                        TERMINAL_MINA;
+
+                corVitoria =
+                        TERMINAL_VITORIA;
+
+                corBandeira =
+                        TERMINAL_BANDEIRA;
+
+                coresNumeros =
+                        new Color[]{
+                                new Color(80, 190, 255),
+                                new Color(90, 255, 90),
+                                new Color(255, 90, 90),
+                                new Color(180, 100, 255),
+                                new Color(255, 170, 70),
+                                new Color(70, 240, 210),
+                                new Color(255, 100, 200),
+                                new Color(190, 230, 190)
+                        };
+            }
+
+            fonteCelula =
+                    FONTE_TERMINAL_CELULA;
+
+            fonteTitulo =
+                    FONTE_TERMINAL_TITULO;
+
+            fonteSubtitulo =
+                    FONTE_TERMINAL_SUBTITULO;
+
+            fonteNormal =
+                    FONTE_TERMINAL_NORMAL;
+
+            fonteNumero =
+                    FONTE_TERMINAL_NUMERO;
+
+            fontePequena =
+                    FONTE_TERMINAL_PEQUENA;
+        } else {
+            if (claro) {
+                corFundo =
+                        COR_FUNDO_CLARO_TEMA;
+
+                corFundoClaro =
+                        Color.WHITE;
+
+                corDestaque =
+                        new Color(20, 150, 145);
+
+                corTextoPrincipal =
+                        COR_TEXTO_PRINCIPAL_CLARO_TEMA;
+
+                corTextoSecundario =
+                        COR_TEXTO_SECUNDARIO_CLARO_TEMA;
+
+                corCard =
+                        COR_CARD_CLARO_TEMA;
+
+                corCardHover =
+                        COR_CARD_HOVER_CLARO_TEMA;
+
+                corBorda =
+                        COR_BORDA_CLARO_TEMA;
+
+                corCelulaOculta =
+                        COR_CELULA_OCULTA_CLARO_TEMA;
+
+                corCelulaOcultaHover =
+                        COR_CELULA_OCULTA_HOVER_CLARO_TEMA;
+
+                corBordaOculta =
+                        COR_BORDA_OCULTA_CLARO_TEMA;
+
+                corCelulaRevelada =
+                        COR_CELULA_REVELADA_CLARO_TEMA;
+
+                corBordaRevelada =
+                        COR_BORDA_REVELADA_CLARO_TEMA;
+
+                corTextoSobreRevelada =
+                        COR_TEXTO_SOBRE_REVELADA_CLARO_TEMA;
+
+                corMinaFundo =
+                        COR_MINA_FUNDO_CLARO_TEMA;
+
+                corMina =
+                        COR_MINA_CLARO_TEMA;
+
+                corVitoria =
+                        COR_VITORIA_CLARO_TEMA;
+
+                corBandeira =
+                        COR_BANDEIRA_CLARO_TEMA;
+
+                coresNumeros =
+                        CORES_NUMEROS_CLARO_TEMA;
+            } else {
+                corFundo =
+                        COR_FUNDO;
+
+                corFundoClaro =
+                        COR_FUNDO_CLARO;
+
+                corDestaque =
+                        COR_DESTAQUE;
+
+                corTextoPrincipal =
+                        COR_TEXTO_PRINCIPAL;
+
+                corTextoSecundario =
+                        COR_TEXTO_SECUNDARIO;
+
+                corCard =
+                        COR_CARD;
+
+                corCardHover =
+                        COR_CARD_HOVER;
+
+                corBorda =
+                        COR_BORDA;
+
                 corCelulaOculta =
                         COR_CELULA_OCULTA;
 
@@ -899,509 +1381,879 @@ public class CampoMinadoView extends JFrame {
 
                 corMinaFundo =
                         COR_MINA_FUNDO;
+
+                corMina =
+                        COR_MINA;
+
+                corVitoria =
+                        COR_VITORIA;
+
+                corBandeira =
+                        COR_BANDEIRA;
+
+                coresNumeros =
+                        CORES_NUMEROS;
             }
+
+            fonteCelula =
+                    FONTE_CELULA;
+
+            fonteTitulo =
+                    FONTE_TITULO;
+
+            fonteSubtitulo =
+                    FONTE_SUBTITULO;
+
+            fonteNormal =
+                    FONTE_NORMAL;
+
+            fonteNumero =
+                    FONTE_NUMERO;
+
+            fontePequena =
+                    FONTE_PEQUENA;
         }
 
-        aplicarTemaVisualSelecionado();
-
-        getContentPane().setBackground(
-                corFundo
+        aplicarTemaTabuleiro(
+                temaTabuleiro
         );
+
+        if (painelPrincipal != null) {
+            atualizarCoresRecursivamente(
+                    painelPrincipal
+            );
+        }
+
+        revalidate();
+        repaint();
     }
 
-    private void aplicarTemaVisualSelecionado() {
-        fonteCelula = FONTE_CELULA;
-        fonteTitulo = FONTE_TITULO;
-        fonteSubtitulo = FONTE_SUBTITULO;
-        fonteNormal = FONTE_NORMAL;
-        fonteNumero = FONTE_NUMERO;
-        fontePequena = FONTE_PEQUENA;
-
-        corMina = COR_MINA;
-        corVitoria = COR_VITORIA;
-        corBandeira = COR_BANDEIRA;
-        coresNumeros = CORES_NUMEROS;
-
-        if (comboTemaVisual == null) {
+    private void aplicarTemaTabuleiro(
+            String temaTabuleiro
+    ) {
+        if (temaTabuleiro == null) {
             return;
         }
 
-        String tema =
-                (String) comboTemaVisual
-                        .getSelectedItem();
+        String normalizado =
+                temaTabuleiro.toLowerCase();
 
-        boolean fundoClaro =
-                "Claro".equals(
-                        comboTemaFundo != null
-                                ? comboTemaFundo.getSelectedItem()
-                                : null
+        if (normalizado.contains("escuro")) {
+            corCelulaOculta =
+                    new Color(45, 45, 58);
+
+            corCelulaOcultaHover =
+                    new Color(65, 65, 82);
+
+            corBordaOculta =
+                    new Color(85, 85, 105);
+
+            corCelulaRevelada =
+                    new Color(28, 28, 36);
+
+            corBordaRevelada =
+                    new Color(65, 65, 78);
+        } else if (normalizado.contains("claro")) {
+            corCelulaOculta =
+                    new Color(222, 227, 235);
+
+            corCelulaOcultaHover =
+                    new Color(205, 212, 223);
+
+            corBordaOculta =
+                    new Color(170, 178, 190);
+
+            corCelulaRevelada =
+                    new Color(250, 250, 252);
+
+            corBordaRevelada =
+                    new Color(205, 210, 218);
+        }
+    }
+
+    private void atualizarCoresRecursivamente(
+            Component componente
+    ) {
+        if (componente instanceof JPanel) {
+            JPanel painel =
+                    (JPanel) componente;
+
+            painel.setBackground(
+                    corFundo
+            );
+        }
+
+        if (componente instanceof JLabel) {
+            JLabel label =
+                    (JLabel) componente;
+
+            label.setForeground(
+                    corTextoPrincipal
+            );
+
+            if (label.getFont() != null) {
+                label.setFont(
+                        fonteCorrespondente(
+                                label.getFont()
+                        )
                 );
-
-        if ("Cyberpunk Neon".equals(tema)) {
-            corDestaque =
-                    new Color(0, 190, 205);
-
-            corBorda =
-                    new Color(225, 30, 165);
-
-            corMina =
-                    new Color(225, 45, 105);
-
-            corVitoria =
-                    new Color(25, 180, 125);
-
-            corBandeira =
-                    new Color(210, 145, 20);
-
-            corCelulaOcultaHover =
-                    fundoClaro
-                            ? new Color(225, 205, 235)
-                            : new Color(67, 22, 91);
-
-            corBordaOculta =
-                    fundoClaro
-                            ? new Color(180, 60, 190)
-                            : new Color(170, 30, 210);
-
-            corBordaRevelada =
-                    fundoClaro
-                            ? new Color(0, 170, 190)
-                            : new Color(0, 220, 235);
-
-            corMinaFundo =
-                    fundoClaro
-                            ? new Color(255, 220, 235)
-                            : new Color(90, 12, 48);
-
-            coresNumeros =
-                    new Color[]{
-                            null,
-                            new Color(0, 155, 175),
-                            new Color(25, 160, 100),
-                            new Color(205, 35, 125),
-                            new Color(120, 55, 190),
-                            new Color(190, 105, 15),
-                            new Color(0, 130, 170),
-                            new Color(180, 50, 145),
-                            new Color(80, 70, 150)
-                    };
-
-            if (fundoClaro) {
-                corFundo =
-                        new Color(248, 242, 252);
-
-                corFundoClaro =
-                        new Color(255, 250, 255);
-
-                corTextoPrincipal =
-                        new Color(45, 20, 55);
-
-                corTextoSecundario =
-                        new Color(100, 65, 115);
-
-                corCard =
-                        new Color(250, 244, 255);
-
-                corCardHover =
-                        new Color(238, 222, 248);
-
-                corCelulaOculta =
-                        new Color(232, 218, 240);
-
-                corCelulaRevelada =
-                        new Color(255, 255, 255);
-
-                corTextoSobreRevelada =
-                        new Color(45, 25, 55);
-
-            } else {
-                corFundo =
-                        new Color(18, 8, 30);
-
-                corFundoClaro =
-                        new Color(31, 14, 48);
-
-                corTextoPrincipal =
-                        new Color(245, 225, 255);
-
-                corTextoSecundario =
-                        new Color(190, 150, 210);
-
-                corCard =
-                        new Color(37, 15, 55);
-
-                corCardHover =
-                        new Color(57, 20, 80);
-
-                corCelulaOculta =
-                        new Color(39, 16, 61);
-
-                corCelulaRevelada =
-                        new Color(58, 29, 76);
-
-                corTextoSobreRevelada =
-                        new Color(235, 245, 255);
             }
+        }
 
-        } else if ("Terminal Retro".equals(tema)) {
-            corDestaque =
-                    new Color(35, 180, 55);
+        if (componente instanceof JButton) {
+            JButton botao =
+                    (JButton) componente;
 
-            corBorda =
-                    new Color(40, 145, 50);
+            botao.setForeground(
+                    corTextoPrincipal
+            );
 
-            corMina =
-                    new Color(190, 45, 45);
+            botao.setBackground(
+                    corFundoClaro
+            );
+        }
 
-            corVitoria =
-                    new Color(45, 190, 65);
+        if (componente instanceof JComboBox) {
+            JComboBox<?> combo =
+                    (JComboBox<?>) componente;
 
-            corBandeira =
-                    new Color(125, 165, 45);
+            combo.setForeground(
+                    corTextoPrincipal
+            );
 
-            corCelulaOcultaHover =
-                    fundoClaro
-                            ? new Color(205, 235, 205)
-                            : new Color(12, 52, 12);
+            combo.setBackground(
+                    corFundoClaro
+            );
+        }
 
-            corBordaOculta =
-                    fundoClaro
-                            ? new Color(45, 160, 55)
-                            : new Color(55, 180, 55);
+        if (componente instanceof Container) {
+            for (Component filho :
+                    ((Container) componente)
+                            .getComponents()) {
 
-            corBordaRevelada =
-                    fundoClaro
-                            ? new Color(70, 155, 70)
-                            : new Color(70, 210, 70);
-
-            corMinaFundo =
-                    fundoClaro
-                            ? new Color(250, 220, 220)
-                            : new Color(55, 15, 15);
-
-            coresNumeros =
-                    new Color[]{
-                            null,
-                            new Color(25, 145, 40),
-                            new Color(35, 160, 50),
-                            new Color(175, 40, 40),
-                            new Color(70, 100, 55),
-                            new Color(125, 110, 30),
-                            new Color(25, 125, 55),
-                            new Color(80, 125, 45),
-                            new Color(60, 100, 65)
-                    };
-
-            fonteCelula =
-                    new Font(
-                            Font.MONOSPACED,
-                            Font.BOLD,
-                            20
-                    );
-
-            fonteTitulo =
-                    new Font(
-                            Font.MONOSPACED,
-                            Font.BOLD,
-                            28
-                    );
-
-            fonteSubtitulo =
-                    new Font(
-                            Font.MONOSPACED,
-                            Font.BOLD,
-                            16
-                    );
-
-            fonteNormal =
-                    new Font(
-                            Font.MONOSPACED,
-                            Font.PLAIN,
-                            14
-                    );
-
-            fonteNumero =
-                    new Font(
-                            Font.MONOSPACED,
-                            Font.BOLD,
-                            18
-                    );
-
-            fontePequena =
-                    new Font(
-                            Font.MONOSPACED,
-                            Font.PLAIN,
-                            12
-                    );
-
-            if (fundoClaro) {
-                corFundo =
-                        new Color(244, 249, 244);
-
-                corFundoClaro =
-                        new Color(252, 255, 252);
-
-                corTextoPrincipal =
-                        new Color(20, 75, 25);
-
-                corTextoSecundario =
-                        new Color(45, 115, 50);
-
-                corCard =
-                        new Color(240, 248, 240);
-
-                corCardHover =
-                        new Color(220, 238, 220);
-
-                corCelulaOculta =
-                        new Color(215, 235, 215);
-
-                corCelulaRevelada =
-                        new Color(255, 255, 255);
-
-                corTextoSobreRevelada =
-                        new Color(20, 70, 25);
-
-            } else {
-                corFundo =
-                        new Color(5, 12, 5);
-
-                corFundoClaro =
-                        new Color(10, 25, 10);
-
-                corTextoPrincipal =
-                        new Color(125, 255, 125);
-
-                corTextoSecundario =
-                        new Color(70, 190, 70);
-
-                corCard =
-                        new Color(8, 22, 8);
-
-                corCardHover =
-                        new Color(15, 40, 15);
-
-                corCelulaOculta =
-                        new Color(8, 32, 8);
-
-                corCelulaRevelada =
-                        new Color(15, 45, 15);
-
-                corTextoSobreRevelada =
-                        new Color(125, 255, 125);
+                atualizarCoresRecursivamente(
+                        filho
+                );
             }
         }
     }
 
-    private JPanel criarCardDificuldade(
-            String titulo,
-            String dimensao,
-            String minasTexto,
-            int linhas,
-            int colunas,
-            int minas) {
+    private Font fonteCorrespondente(
+            Font fonteAtual
+    ) {
+        if (fonteAtual == null) {
+            return fonteNormal;
+        }
 
-        JPanel card = new JPanel();
-
-        card.setLayout(
-                new BoxLayout(
-                        card,
-                        BoxLayout.Y_AXIS
-                )
-        );
-
-        card.setBackground(corCard);
-
-        card.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(
-                                corBorda,
-                                1
-                        ),
-                        BorderFactory.createEmptyBorder(
-                                20, 25, 20, 25
-                        )
-                )
-        );
-
-        card.setCursor(
-                new Cursor(
-                        Cursor.HAND_CURSOR
-                )
-        );
-
-        card.setAlignmentX(
-                Component.CENTER_ALIGNMENT
-        );
-
-        JLabel lblTitulo =
-                new JLabel(titulo);
-
-        lblTitulo.setFont(fonteSubtitulo);
-        lblTitulo.setForeground(corDestaque);
-        lblTitulo.setAlignmentX(
-                Component.CENTER_ALIGNMENT
-        );
-
-        card.add(lblTitulo);
-
-        JLabel lblDim =
-                new JLabel(dimensao);
-
-        lblDim.setFont(
-                new Font(
-                        "Segoe UI",
-                        Font.BOLD,
-                        22
-                )
-        );
-
-        lblDim.setForeground(
-                corTextoPrincipal
-        );
-
-        lblDim.setAlignmentX(
-                Component.CENTER_ALIGNMENT
-        );
-
-        lblDim.setBorder(
-                BorderFactory.createEmptyBorder(
-                        8, 0, 4, 0
-                )
-        );
-
-        card.add(lblDim);
-
-        JLabel lblMinas =
-                new JLabel(
-                        EMOJI_BOMBA
-                                + " "
-                                + minasTexto
+        int tamanho =
+                Math.max(
+                        1,
+                        fonteAtual.getSize()
                 );
 
-        lblMinas.setFont(fonteNormal);
-        lblMinas.setForeground(
-                corTextoSecundario
+        return fonteAtual.deriveFont(
+                fonteAtual.getStyle(),
+                tamanho
         );
-
-        lblMinas.setAlignmentX(
-                Component.CENTER_ALIGNMENT
-        );
-
-        card.add(lblMinas);
-
-        card.addMouseListener(
-                new MouseAdapter() {
-                    @Override
-                    public void mouseEntered(
-                            MouseEvent e) {
-
-                        card.setBackground(
-                                corCardHover
-                        );
-
-                        card.setBorder(
-                                BorderFactory.createCompoundBorder(
-                                        BorderFactory.createLineBorder(
-                                                corDestaque,
-                                                2
-                                        ),
-                                        BorderFactory.createEmptyBorder(
-                                                19, 24, 19, 24
-                                        )
-                                )
-                        );
-                    }
-
-                    @Override
-                    public void mouseExited(
-                            MouseEvent e) {
-
-                        card.setBackground(
-                                corCard
-                        );
-
-                        card.setBorder(
-                                BorderFactory.createCompoundBorder(
-                                        BorderFactory.createLineBorder(
-                                                corBorda,
-                                                1
-                                        ),
-                                        BorderFactory.createEmptyBorder(
-                                                20, 25, 20, 25
-                                        )
-                                )
-                        );
-                    }
-
-                    @Override
-                    public void mouseClicked(
-                            MouseEvent e) {
-
-                        if (ouvinte != null) {
-                            ouvinte.aoEscolherDificuldade(
-                                    linhas,
-                                    colunas,
-                                    minas
-                            );
-                        }
-                    }
-                }
-        );
-
-        return card;
     }
 
     // ================================================================
-    // TELA DE JOGO
+    // Tela inicial
     // ================================================================
 
-    public void iniciarTelaDeJogo(
-            int linhas,
-            int colunas,
-            int totalMinas,
-            int totalCelulas,
-            int tempoLimiteSegundos,
-            int vidasRestantes) {
-
+    public void mostrarTelaInicial() {
         getContentPane().removeAll();
-        setLayout(new BorderLayout(0, 0));
 
-        add(
-                criarPainelSuperior(),
-                BorderLayout.NORTH
-        );
-
-        JPanel painelPrincipal =
+        painelPrincipal =
                 new JPanel(
-                        new BorderLayout(15, 0)
+                        new BorderLayout()
                 );
 
         painelPrincipal.setBackground(
                 corFundo
         );
 
-        painelPrincipal.setBorder(
-                BorderFactory.createEmptyBorder(
-                        0, 15, 15, 15
+        JPanel conteudo =
+                new JPanel();
+
+        conteudo.setLayout(
+                new BoxLayout(
+                        conteudo,
+                        BoxLayout.Y_AXIS
                 )
         );
 
-        painelPrincipal.add(
-                criarPainelTabuleiro(
-                        linhas,
-                        colunas
-                ),
-                BorderLayout.CENTER
+        conteudo.setBackground(
+                corFundo
+        );
+
+        conteudo.setBorder(
+                BorderFactory.createEmptyBorder(
+                        35,
+                        45,
+                        35,
+                        45
+                )
+        );
+
+        JLabel titulo =
+                new JLabel(
+                        EMOJI_BOMBA
+                                + " CAMPO MINADO"
+                );
+
+        titulo.setFont(
+                fonteTitulo
+        );
+
+        titulo.setForeground(
+                corDestaque
+        );
+
+        titulo.setAlignmentX(
+                Component.CENTER_ALIGNMENT
+        );
+
+        conteudo.add(
+                titulo
+        );
+
+        conteudo.add(
+                Box.createVerticalStrut(
+                        10
+                )
+        );
+
+        JLabel subtitulo =
+                new JLabel(
+                        "Escolha a dificuldade e configure sua partida"
+                );
+
+        subtitulo.setFont(
+                fonteNormal
+        );
+
+        subtitulo.setForeground(
+                corTextoSecundario
+        );
+
+        subtitulo.setAlignmentX(
+                Component.CENTER_ALIGNMENT
+        );
+
+        conteudo.add(
+                subtitulo
+        );
+
+        conteudo.add(
+                Box.createVerticalStrut(
+                        30
+                )
+        );
+
+        JPanel painelConfiguracoes =
+                criarPainelConfiguracoes();
+
+        painelConfiguracoes.setAlignmentX(
+                Component.CENTER_ALIGNMENT
+        );
+
+        conteudo.add(
+                painelConfiguracoes
+        );
+
+        conteudo.add(
+                Box.createVerticalStrut(
+                        25
+                )
+        );
+
+        JButton iniciar =
+                criarBotaoPrincipal(
+                        "Iniciar jogo"
+                );
+
+        iniciar.setAlignmentX(
+                Component.CENTER_ALIGNMENT
+        );
+
+        iniciar.addActionListener(
+                e -> iniciarJogoSelecionado()
+        );
+
+        conteudo.add(
+                iniciar
+        );
+
+        conteudo.add(
+                Box.createVerticalStrut(
+                        12
+                )
+        );
+
+        JButton tutorial =
+                criarBotaoSecundario(
+                        "Como jogar"
+                );
+
+        tutorial.setAlignmentX(
+                Component.CENTER_ALIGNMENT
+        );
+
+        tutorial.addActionListener(
+                e -> mostrarTutorial()
+        );
+
+        conteudo.add(
+                tutorial
         );
 
         painelPrincipal.add(
+                conteudo,
+                BorderLayout.CENTER
+        );
+
+        getContentPane().setLayout(
+                new BorderLayout()
+        );
+
+        getContentPane().add(
+                painelPrincipal,
+                BorderLayout.CENTER
+        );
+
+        setResizable(false);
+
+        pack();
+
+        ajustarTamanhoJanelaAoMonitor();
+
+        setLocationRelativeTo(null);
+
+        revalidate();
+        repaint();
+    }
+
+    private JPanel criarPainelConfiguracoes() {
+        JPanel painel =
+                new JPanel(
+                        new GridBagLayout()
+                );
+
+        painel.setBackground(
+                corCard
+        );
+
+        painel.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(
+                                corBorda
+                        ),
+                        BorderFactory.createEmptyBorder(
+                                20,
+                                25,
+                                20,
+                                25
+                        )
+                )
+        );
+
+        GridBagConstraints gbc =
+                new GridBagConstraints();
+
+        gbc.insets =
+                new Insets(
+                        8,
+                        8,
+                        8,
+                        8
+                );
+
+        gbc.fill =
+                GridBagConstraints.HORIZONTAL;
+
+        gbc.weightx = 1;
+
+        JLabel dificuldade =
+                criarLabelConfiguracao(
+                        "Dificuldade"
+                );
+
+        comboTemaTabuleiro =
+                criarComboBox(
+                        new String[]{
+                                "Tabuleiro Padrao",
+                                "Tabuleiro Claro",
+                                "Tabuleiro Escuro"
+                        }
+                );
+
+        comboTemaFundo =
+                criarComboBox(
+                        new String[]{
+                                detectarTemaClaroDoSistema()
+                                        ? "Claro"
+                                        : "Escuro",
+                                detectarTemaClaroDoSistema()
+                                        ? "Escuro"
+                                        : "Claro"
+                        }
+                );
+
+        comboTemaVisual =
+                criarComboBox(
+                        new String[]{
+                                "Padrao",
+                                "Cyberpunk Neon",
+                                "Terminal Retro"
+                        }
+                );
+
+        comboTempo =
+                criarComboBox(
+                        new String[]{
+                                "Sem limite",
+                                "30 segundos",
+                                "60 segundos",
+                                "120 segundos",
+                                "300 segundos"
+                        }
+                );
+
+        JComboBox<String> comboDificuldade =
+                criarComboBox(
+                        new String[]{
+                                "Iniciante - 9 x 9 - 10 minas",
+                                "Intermediario - 16 x 16 - 40 minas",
+                                "Avancado - 16 x 30 - 99 minas"
+                        }
+                );
+
+        adicionarLinhaConfiguracao(
+                painel,
+                gbc,
+                0,
+                "Dificuldade",
+                comboDificuldade
+        );
+
+        adicionarLinhaConfiguracao(
+                painel,
+                gbc,
+                1,
+                "Tema de fundo",
+                comboTemaFundo
+        );
+
+        adicionarLinhaConfiguracao(
+                painel,
+                gbc,
+                2,
+                "Tema visual",
+                comboTemaVisual
+        );
+
+        adicionarLinhaConfiguracao(
+                painel,
+                gbc,
+                3,
+                "Tema do tabuleiro",
+                comboTemaTabuleiro
+        );
+
+        adicionarLinhaConfiguracao(
+                painel,
+                gbc,
+                4,
+                "Tempo",
+                comboTempo
+        );
+
+                comboDificuldade.putClientProperty(
+                "dificuldade",
+                true
+        );
+
+        painel.putClientProperty(
+                "comboDificuldade",
+                comboDificuldade
+        );
+
+        return painel;
+    }
+
+
+    public int getTempoLimiteSegundosSelecionado() {
+        String selecionado = comboTempo.getSelectedItem().toString();
+
+        switch (selecionado) {
+            case "Sem limite":
+                return 0;
+
+            case "30 segundos":
+                return 30;
+
+            case "60 segundos":
+                return 60;
+
+            case "120 segundos":
+                return 120;
+
+            case "300 segundos":
+                return 300;
+
+            default:
+                return 0;
+        }
+    }
+    
+
+    private void adicionarLinhaConfiguracao(
+            JPanel painel,
+            GridBagConstraints gbc,
+            int linha,
+            String texto,
+            JComboBox<String> combo
+    ) {
+        gbc.gridx = 0;
+        gbc.gridy = linha;
+        gbc.weightx = 0.35;
+
+        JLabel label =
+                criarLabelConfiguracao(
+                        texto
+                );
+
+        painel.add(
+                label,
+                gbc
+        );
+
+        gbc.gridx = 1;
+        gbc.weightx = 0.65;
+
+        painel.add(
+                combo,
+                gbc
+        );
+    }
+
+    private JLabel criarLabelConfiguracao(
+            String texto
+    ) {
+        JLabel label =
+                new JLabel(
+                        texto
+                );
+
+        label.setFont(
+                fonteNormal
+        );
+
+        label.setForeground(
+                corTextoPrincipal
+        );
+
+        return label;
+    }
+
+    private JComboBox<String> criarComboBox(
+            String[] itens
+    ) {
+        JComboBox<String> combo =
+                new JComboBox<>(
+                        itens
+                );
+
+        combo.setFont(
+                fonteNormal
+        );
+
+        combo.setForeground(
+                corTextoPrincipal
+        );
+
+        combo.setBackground(
+                corFundoClaro
+        );
+
+        combo.setFocusable(false);
+
+        combo.setBorder(
+                BorderFactory.createLineBorder(
+                        corBorda
+                )
+        );
+
+        combo.setPreferredSize(
+                new Dimension(
+                        260,
+                        34
+                )
+        );
+
+        return combo;
+    }
+
+    private JButton criarBotaoPrincipal(
+            String texto
+    ) {
+        JButton botao =
+                new JButton(
+                        texto
+                );
+
+        botao.setFont(
+                fonteNormal
+        );
+
+        botao.setForeground(
+                corFundo
+        );
+
+        botao.setBackground(
+                corDestaque
+        );
+
+        botao.setFocusPainted(
+                false
+        );
+
+        botao.setBorder(
+                BorderFactory.createEmptyBorder(
+                        10,
+                        24,
+                        10,
+                        24
+                )
+        );
+
+        botao.setCursor(
+                new Cursor(
+                        Cursor.HAND_CURSOR
+                )
+        );
+
+        return botao;
+    }
+
+    private JButton criarBotaoSecundario(
+            String texto
+    ) {
+        JButton botao =
+                new JButton(
+                        texto
+                );
+
+        botao.setFont(
+                fonteNormal
+        );
+
+        botao.setForeground(
+                corTextoPrincipal
+        );
+
+        botao.setBackground(
+                corFundoClaro
+        );
+
+        botao.setFocusPainted(
+                false
+        );
+
+        botao.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(
+                                corBorda
+                        ),
+                        BorderFactory.createEmptyBorder(
+                                9,
+                                20,
+                                9,
+                                20
+                        )
+                )
+        );
+
+        botao.setCursor(
+                new Cursor(
+                        Cursor.HAND_CURSOR
+                )
+        );
+
+        return botao;
+    }
+
+    private void iniciarJogoSelecionado() {
+        JPanel configuracoes =
+                encontrarPainelConfiguracoes();
+
+        if (configuracoes == null) {
+            return;
+        }
+
+        JComboBox<?> comboDificuldade =
+                (JComboBox<?>)
+                        configuracoes.getClientProperty(
+                                "comboDificuldade"
+                        );
+
+        if (comboDificuldade == null) {
+            return;
+        }
+
+        int linhas = 9;
+        int colunas = 9;
+        int minas = 10;
+
+        int selecionado =
+                comboDificuldade.getSelectedIndex();
+
+        if (selecionado == 1) {
+            linhas = 16;
+            colunas = 16;
+            minas = 40;
+        } else if (selecionado == 2) {
+            linhas = 16;
+            colunas = 30;
+            minas = 99;
+        }
+
+        if (ouvinte != null) {
+            ouvinte.aoEscolherDificuldade(
+                    linhas,
+                    colunas,
+                    minas
+            );
+        }
+    }
+
+    private JPanel encontrarPainelConfiguracoes() {
+        return encontrarPainelConfiguracoesRecursivo(
+                getContentPane()
+        );
+    }
+
+    private JPanel encontrarPainelConfiguracoesRecursivo(
+            Component componente
+    ) {
+        if (componente instanceof JPanel) {
+            JPanel painel =
+                    (JPanel) componente;
+
+            if (painel.getClientProperty(
+                    "comboDificuldade"
+            ) != null) {
+                return painel;
+            }
+        }
+
+        if (componente instanceof Container) {
+            for (Component filho :
+                    ((Container) componente)
+                            .getComponents()) {
+
+                JPanel resultado =
+                        encontrarPainelConfiguracoesRecursivo(
+                                filho
+                        );
+
+                if (resultado != null) {
+                    return resultado;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private void mostrarTutorial() {
+        JOptionPane.showMessageDialog(
+                this,
+                "<html>"
+                        + "<div style='width:420px'>"
+                        + "<h2>Como jogar</h2>"
+                        + "<ol>"
+                        + "<li>Escolha a dificuldade e o tempo.</li>"
+                        + "<li>Clique com o botão esquerdo para revelar uma célula.</li>"
+                        + "<li>Clique com o botão direito para colocar ou retirar uma bandeira.</li>"
+                        + "<li>O objetivo é revelar todas as células que não possuem minas.</li>"
+                        + "<li>Se explodir uma mina, o jogo segue conforme as vidas restantes.</li>"
+                        + "<li>Se o tempo limite for atingido, a partida termina em derrota.</li>"
+                        + "<li>Use F11 ou o botão <b>Tela cheia</b> para alternar a visualização.</li>"
+                        + "</ol>"
+                        + "</div>"
+                        + "</html>",
+                "Como jogar",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
+    // ================================================================
+    // Tela de jogo
+    // ================================================================
+
+    /**
+     * Monta a tela de jogo do zero para um tabuleiro de {@code linhas} x
+     * {@code colunas}. Não recebe o {@link model.Tabuleiro}, apenas as
+     * dimensões — quem decide o que cada célula mostra depois é sempre
+     * o Controller, chamando {@link #atualizarCelula}.
+     */
+    public void iniciarTelaDeJogo(
+            int linhas,
+            int colunas,
+            int totalMinas,
+            int totalCelulas,
+            int tempoLimiteSegundos,
+            int vidasRestantes
+    ) {
+        getContentPane().removeAll();
+
+        setLayout(
+                new BorderLayout()
+        );
+
+        painelPrincipal =
+                new JPanel(
+                        new BorderLayout()
+                );
+
+        painelPrincipal.setBackground(
+                corFundo
+        );
+
+        JPanel painelSuperior =
+                criarPainelSuperior();
+
+        painelPrincipal.add(
+                painelSuperior,
+                BorderLayout.NORTH
+        );
+
+        painelTabuleiro =
+                criarPainelTabuleiro(
+                        linhas,
+                        colunas
+                );
+
+        // O tabuleiro ocupa diretamente a região central. Dessa forma,
+        // o GridLayout pode reduzir ou ampliar proporcionalmente as células
+        // conforme o espaço disponível, sem introduzir barras de rolagem.
+        painelPrincipal.add(
+                painelTabuleiro,
+                BorderLayout.CENTER
+        );
+
+        JPanel painelEstatisticas =
                 criarPainelEstatisticas(
                         totalMinas,
                         totalCelulas,
                         vidasRestantes
-                ),
-                BorderLayout.EAST
+                );
+
+        painelPrincipal.add(
+                painelEstatisticas,
+                BorderLayout.SOUTH
         );
 
         add(
@@ -1410,88 +2262,135 @@ public class CampoMinadoView extends JFrame {
         );
 
         pack();
+
+        ajustarTamanhoJanelaAoMonitor();
+
         setLocationRelativeTo(null);
+
         revalidate();
         repaint();
+    }
+
+    /**
+     * Mantém a janela dentro da área útil do monitor. Como o tabuleiro está
+     * diretamente no BorderLayout.CENTER, o GridLayout ajusta o tamanho das
+     * células quando a janela precisa ser menor que o tamanho preferido.
+     * Isso evita barras de rolagem sem deformar a quantidade de linhas ou
+     * colunas do tabuleiro.
+     */
+    private void ajustarTamanhoJanelaAoMonitor() {
+        GraphicsConfiguration configuracao =
+                getGraphicsConfiguration();
+
+        if (configuracao == null) {
+            return;
+        }
+
+        Rectangle area =
+                configuracao.getBounds();
+
+        Insets insets =
+                Toolkit.getDefaultToolkit()
+                        .getScreenInsets(
+                                configuracao
+                        );
+
+        int larguraDisponivel =
+                Math.max(
+                        1,
+                        area.width
+                                - insets.left
+                                - insets.right
+                );
+
+        int alturaDisponivel =
+                Math.max(
+                        1,
+                        area.height
+                                - insets.top
+                                - insets.bottom
+                );
+
+        int larguraMaxima =
+                Math.max(
+                        1,
+                        (int)
+                                (larguraDisponivel * 0.95)
+                );
+
+        int alturaMaxima =
+                Math.max(
+                        1,
+                        (int)
+                                (alturaDisponivel * 0.95)
+                );
+
+        Dimension tamanho =
+                getSize();
+
+        int largura =
+                Math.min(
+                        tamanho.width,
+                        larguraMaxima
+                );
+
+        int altura =
+                Math.min(
+                        tamanho.height,
+                        alturaMaxima
+                );
+
+        setSize(
+                Math.max(
+                        1,
+                        largura
+                ),
+                Math.max(
+                        1,
+                        altura
+                )
+        );
+
+        setMinimumSize(
+                new Dimension(
+                        Math.min(
+                                getMinimumSize().width,
+                                larguraMaxima
+                        ),
+                        Math.min(
+                                getMinimumSize().height,
+                                alturaMaxima
+                        )
+                )
+        );
     }
 
     private JPanel criarPainelSuperior() {
         JPanel painel =
                 new JPanel(
-                        new BorderLayout()
+                        new BorderLayout(
+                                15,
+                                0
+                        )
                 );
 
-        painel.setBackground(corFundo);
+        painel.setBackground(
+                corFundo
+        );
 
         painel.setBorder(
                 BorderFactory.createEmptyBorder(
-                        15, 15, 10, 15
+                        15,
+                        20,
+                        10,
+                        20
                 )
-        );
-
-        JButton btnNovo =
-                new JButton("← Novo Jogo");
-
-        btnNovo.setFont(fonteNormal);
-        btnNovo.setForeground(
-                corTextoPrincipal
-        );
-
-        btnNovo.setBackground(
-                corFundoClaro
-        );
-
-        btnNovo.setFocusPainted(false);
-
-        btnNovo.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(
-                                corBorda
-                        ),
-                        BorderFactory.createEmptyBorder(
-                                8, 16, 8, 16
-                        )
-                )
-        );
-
-        btnNovo.setCursor(
-                new Cursor(
-                        Cursor.HAND_CURSOR
-                )
-        );
-
-        btnNovo.addActionListener(
-                e -> {
-                    if (ouvinte != null) {
-                        ouvinte.aoPedirNovoJogo();
-                    }
-                }
-        );
-
-        btnNovo.addMouseListener(
-                new MouseAdapter() {
-                    @Override
-                    public void mouseEntered(
-                            MouseEvent e) {
-                        btnNovo.setBackground(
-                                corCardHover
-                        );
-                    }
-
-                    @Override
-                    public void mouseExited(
-                            MouseEvent e) {
-                        btnNovo.setBackground(
-                                corFundoClaro
-                        );
-                    }
-                }
         );
 
         labelStatus =
                 new JLabel(
-                        "Boa sorte!",
-                        SwingConstants.CENTER
+                        EMOJI_BOMBA
+                                + " Campo Minado"
                 );
 
         labelStatus.setFont(
@@ -1499,17 +2398,162 @@ public class CampoMinadoView extends JFrame {
         );
 
         labelStatus.setForeground(
-                corTextoSecundario
-        );
-
-        painel.add(
-                btnNovo,
-                BorderLayout.WEST
+                corTextoPrincipal
         );
 
         painel.add(
                 labelStatus,
+                BorderLayout.WEST
+        );
+
+        lblTempo =
+                new JLabel(
+                        EMOJI_RELOGIO
+                                + " 00:00"
+                );
+
+        lblTempo.setFont(
+                fonteNumero
+        );
+
+        lblTempo.setForeground(
+                corDestaque
+        );
+
+        lblTempo.setHorizontalAlignment(
+                SwingConstants.CENTER
+        );
+
+        painel.add(
+                lblTempo,
                 BorderLayout.CENTER
+        );
+
+        JButton novoJogo =
+                new JButton(
+                        "Novo jogo"
+                );
+
+        novoJogo.setFont(
+                fontePequena
+        );
+
+        novoJogo.setForeground(
+                corTextoPrincipal
+        );
+
+        novoJogo.setBackground(
+                corFundoClaro
+        );
+
+        novoJogo.setFocusPainted(
+                false
+        );
+
+        novoJogo.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(
+                                corBorda
+                        ),
+                        BorderFactory.createEmptyBorder(
+                                7,
+                                12,
+                                7,
+                                12
+                        )
+                )
+        );
+
+        novoJogo.setCursor(
+                new Cursor(
+                        Cursor.HAND_CURSOR
+                )
+        );
+
+        novoJogo.addActionListener(
+                e -> {
+                    if (ouvinte != null) {
+                        ouvinte.aoPedirNovoJogo();
+                    }
+                }
+        );
+
+        JButton telaCheiaBotao =
+                new JButton(
+                        telaCheia
+                                ? "Sair da tela cheia"
+                                : "Tela cheia"
+                );
+
+        telaCheiaBotao.putClientProperty(
+                "botaoTelaCheia",
+                true
+        );
+
+        telaCheiaBotao.setFont(
+                fontePequena
+        );
+
+        telaCheiaBotao.setForeground(
+                corTextoPrincipal
+        );
+
+        telaCheiaBotao.setBackground(
+                corFundoClaro
+        );
+
+        telaCheiaBotao.setFocusPainted(
+                false
+        );
+
+        telaCheiaBotao.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(
+                                corBorda
+                        ),
+                        BorderFactory.createEmptyBorder(
+                                7,
+                                12,
+                                7,
+                                12
+                        )
+                )
+        );
+
+        telaCheiaBotao.setCursor(
+                new Cursor(
+                        Cursor.HAND_CURSOR
+                )
+        );
+
+        telaCheiaBotao.addActionListener(
+                e -> alternarTelaCheia()
+        );
+
+        JPanel botoes =
+                new JPanel(
+                        new FlowLayout(
+                                FlowLayout.RIGHT,
+                                8,
+                                0
+                        )
+                );
+
+        botoes.setOpaque(
+                false
+        );
+
+        botoes.add(
+                telaCheiaBotao
+        );
+
+        botoes.add(
+                novoJogo
+        );
+
+        painel.add(
+                botoes,
+                BorderLayout.EAST
         );
 
         return painel;
@@ -1518,9 +2562,10 @@ public class CampoMinadoView extends JFrame {
     private JPanel criarPainelEstatisticas(
             int totalMinas,
             int totalCelulas,
-            int vidasRestantes) {
-
-        JPanel painel = new JPanel();
+            int vidasRestantes
+    ) {
+        JPanel painel =
+                new JPanel();
 
         painel.setLayout(
                 new BoxLayout(
@@ -1530,175 +2575,138 @@ public class CampoMinadoView extends JFrame {
         );
 
         painel.setBackground(
-                corFundoClaro
+                corFundo
         );
 
         painel.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(
-                                corBorda,
-                                1
-                        ),
-                        BorderFactory.createEmptyBorder(
-                                15, 15, 15, 15
+                BorderFactory.createEmptyBorder(
+                        10,
+                        20,
+                        15,
+                        20
+                )
+        );
+
+        JPanel linha =
+                new JPanel(
+                        new GridLayout(
+                                1,
+                                4,
+                                15,
+                                0
                         )
-                )
-        );
-
-        int largura =
-                180 + Math.min(
-                        100,
-                        totalMinas * 2
                 );
 
-        painel.setPreferredSize(
-                new Dimension(
-                        largura,
-                        0
-                )
+        linha.setBackground(
+                corFundo
         );
 
-        JLabel lblTitulo =
-                new JLabel("Estatísticas");
-
-        lblTitulo.setFont(
-                fonteSubtitulo
-        );
-
-        lblTitulo.setForeground(
-                corDestaque
-        );
-
-        lblTitulo.setAlignmentX(
-                Component.CENTER_ALIGNMENT
-        );
-
-        painel.add(lblTitulo);
-
-        painel.add(
-                Box.createVerticalStrut(20)
-        );
-
-        JPanel pnlTempo =
-                criarItemEstatistica(
-                        EMOJI_RELOGIO + " Tempo",
-                        "00:00"
-                );
-
-        lblTempo =
-                (JLabel)
-                        pnlTempo.getClientProperty(
-                                "valor"
-                        );
-
-        painel.add(pnlTempo);
-
-        painel.add(
-                Box.createVerticalStrut(15)
-        );
-
-        JPanel pnlMinas =
-                criarItemEstatistica(
-                        EMOJI_BOMBA + " Minas",
-                        String.valueOf(totalMinas)
-                );
-
-        lblMinasRestantes =
-                (JLabel)
-                        pnlMinas.getClientProperty(
-                                "valor"
-                        );
-
-        painel.add(pnlMinas);
-
-        painel.add(
-                Box.createVerticalStrut(15)
-        );
-
-        JPanel pnlReveladas =
+        JPanel itemMinas =
                 criarItemEstatistica(
                         EMOJI_ICONE_ESTATISTICA
-                                + " Reveladas",
-                        "0 / " + totalCelulas
+                                + " Minas",
+                        String.valueOf(
+                                totalMinas
+                        )
                 );
 
-        lblCelulasReveladas =
-                (JLabel)
-                        pnlReveladas.getClientProperty(
-                                "valor"
-                        );
-
-        painel.add(pnlReveladas);
-
-        painel.add(
-                Box.createVerticalStrut(15)
-        );
-
-        JPanel pnlJogadas =
+        JPanel itemReveladas =
                 criarItemEstatistica(
-                        EMOJI_JOGADA + " Jogadas",
+                        "Células",
+                        "0 / "
+                                + totalCelulas
+                );
+
+        JPanel itemJogadas =
+                criarItemEstatistica(
+                        EMOJI_JOGADA
+                                + " Jogadas",
                         "0"
                 );
 
-        lblJogadas =
+        JPanel itemVidas =
+                criarItemEstatistica(
+                        EMOJI_VIDA
+                                + " Vidas",
+                        String.valueOf(
+                                Math.max(
+                                        0,
+                                        vidasRestantes
+                                )
+                        )
+                );
+
+        linha.add(
+                itemMinas
+        );
+
+        linha.add(
+                itemReveladas
+        );
+
+        linha.add(
+                itemJogadas
+        );
+
+        linha.add(
+                itemVidas
+        );
+
+        lblMinasRestantes =
                 (JLabel)
-                        pnlJogadas.getClientProperty(
+                        itemMinas.getClientProperty(
                                 "valor"
                         );
 
-        painel.add(pnlJogadas);
+        lblCelulasReveladas =
+                (JLabel)
+                        itemReveladas.getClientProperty(
+                                "valor"
+                        );
 
-        painel.add(
-                Box.createVerticalStrut(15)
-        );
-
-        JPanel pnlVidas =
-                criarItemEstatistica(
-                        "❤️ Vidas",
-                        String.valueOf(vidasRestantes)
-                );
+        lblJogadas =
+                (JLabel)
+                        itemJogadas.getClientProperty(
+                                "valor"
+                        );
 
         lblVidas =
                 (JLabel)
-                        pnlVidas.getClientProperty(
+                        itemVidas.getClientProperty(
                                 "valor"
                         );
 
-        painel.add(pnlVidas);
+        painel.add(
+                linha
+        );
 
         painel.add(
-                Box.createVerticalStrut(20)
+                Box.createVerticalStrut(
+                        10
+                )
         );
-
-        JLabel lblProgTitulo =
-                new JLabel("Progresso");
-
-        lblProgTitulo.setFont(
-                fonteNormal
-        );
-
-        lblProgTitulo.setForeground(
-                corTextoSecundario
-        );
-
-        lblProgTitulo.setAlignmentX(
-                Component.CENTER_ALIGNMENT
-        );
-
-        painel.add(lblProgTitulo);
 
         barraProgresso =
                 new JProgressBar(
                         0,
                         Math.max(
-                                totalCelulas,
-                                1
+                                1,
+                                totalCelulas
                         )
                 );
 
-        barraProgresso.setValue(0);
-        barraProgresso.setStringPainted(true);
-        barraProgresso.setString("0%");
+        barraProgresso.setValue(
+                0
+        );
+
+        barraProgresso.setStringPainted(
+                true
+        );
+
+        barraProgresso.setString(
+                "0%"
+        );
+
         barraProgresso.setForeground(
                 corDestaque
         );
@@ -1714,21 +2722,31 @@ public class CampoMinadoView extends JFrame {
         );
 
         barraProgresso.setPreferredSize(
-                new Dimension(150, 20)
+                new Dimension(
+                        150,
+                        20
+                )
         );
 
         barraProgresso.setMaximumSize(
-                new Dimension(150, 20)
+                new Dimension(
+                        150,
+                        20
+                )
         );
 
         barraProgresso.setAlignmentX(
                 Component.CENTER_ALIGNMENT
         );
 
-        painel.add(barraProgresso);
+        painel.add(
+                barraProgresso
+        );
 
         painel.add(
-                Box.createVerticalStrut(15)
+                Box.createVerticalStrut(
+                        15
+                )
         );
 
         painel.add(
@@ -1737,10 +2755,10 @@ public class CampoMinadoView extends JFrame {
 
         JLabel lblDica =
                 new JLabel(
-                        "<html><center>\uD83D\uDDB1\uFE0F "
-                                + "Esquerdo: revelar<br>"
-                                + "\uD83D\uDDB1\uFE0F "
-                                + "Direito: bandeira</center></html>"
+                        "<html><center>"
+                                + "\uD83D\uDDB1\uFE0F Esquerdo: revelar<br>"
+                                + "\uD83D\uDDB1\uFE0F Direito: bandeira"
+                                + "</center></html>"
                 );
 
         lblDica.setFont(
@@ -1755,15 +2773,23 @@ public class CampoMinadoView extends JFrame {
                 Component.CENTER_ALIGNMENT
         );
 
-        painel.add(lblDica);
+        painel.add(
+                lblDica
+        );
 
         return painel;
     }
 
+    /**
+     * Cria um item de estatística (título + valor) como um único painel,
+     * guardando a referência ao label de valor via putClientProperty para
+     * que possa ser atualizado depois. (Antes o valor era retornado
+     * "solto", sem o painel-pai ser adicionado à tela — corrigido aqui.)
+     */
     private JPanel criarItemEstatistica(
             String titulo,
-            String valorInicial) {
-
+            String valorInicial
+    ) {
         JPanel painelItem =
                 new JPanel();
 
@@ -1783,7 +2809,9 @@ public class CampoMinadoView extends JFrame {
         );
 
         JLabel lblTitulo =
-                new JLabel(titulo);
+                new JLabel(
+                        titulo
+                );
 
         lblTitulo.setFont(
                 fontePequena
@@ -1798,7 +2826,9 @@ public class CampoMinadoView extends JFrame {
         );
 
         JLabel lblValor =
-                new JLabel(valorInicial);
+                new JLabel(
+                        valorInicial
+                );
 
         lblValor.setFont(
                 fonteNumero
@@ -1812,22 +2842,51 @@ public class CampoMinadoView extends JFrame {
                 Component.CENTER_ALIGNMENT
         );
 
-        painelItem.add(lblTitulo);
-        painelItem.add(lblValor);
+        painelItem.add(
+                lblTitulo
+        );
+
+        painelItem.add(
+                Box.createVerticalStrut(
+                        4
+                )
+        );
+
+        painelItem.add(
+                lblValor
+        );
 
         painelItem.putClientProperty(
                 "valor",
                 lblValor
         );
 
+        painelItem.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(
+                                corBorda
+                        ),
+                        BorderFactory.createEmptyBorder(
+                                8,
+                                10,
+                                8,
+                                10
+                        )
+                )
+        );
+
         return painelItem;
     }
 
+    // ================================================================
+    // Tabuleiro
+    // ================================================================
+
     private JPanel criarPainelTabuleiro(
             int linhas,
-            int colunas) {
-
-        JPanel grade =
+            int colunas
+    ) {
+        JPanel painel =
                 new JPanel(
                         new GridLayout(
                                 linhas,
@@ -1836,44 +2895,85 @@ public class CampoMinadoView extends JFrame {
                                 2
                         )
                 );
+                
+        painel.putClientProperty(
+        "colunas",
+        colunas
+        );
 
-        grade.setBackground(corFundo);
+        painel.setBackground(
+                corFundo
+        );
 
-        botoes =
-                new JButton[linhas][colunas];
+        painel.setBorder(
+                BorderFactory.createEmptyBorder(
+                        10,
+                        10,
+                        10,
+                        10
+                )
+        );
 
-        for (int i = 0; i < linhas; i++) {
-            for (int j = 0; j < colunas; j++) {
+        for (int linha = 0;
+             linha < linhas;
+             linha++) {
+
+            for (int coluna = 0;
+                 coluna < colunas;
+                 coluna++) {
+
                 JButton botao =
                         criarBotaoCelula(
-                                i,
-                                j
+                                linha,
+                                coluna
                         );
 
-                botoes[i][j] = botao;
-                grade.add(botao);
+                painel.add(
+                        botao
+                );
             }
         }
 
-        return grade;
+        return painel;
     }
 
     private JButton criarBotaoCelula(
             int linha,
-            int coluna) {
-
+            int coluna
+    ) {
         JButton botao =
                 new JButton();
-
-        botao.setPreferredSize(
-                new Dimension(36, 36)
-        );
 
         botao.setFont(
                 fonteCelula
         );
 
-        botao.setFocusPainted(false);
+        botao.setFocusPainted(
+                false
+        );
+
+        botao.setMargin(
+                new Insets(
+                        0,
+                        0,
+                        0,
+                        0
+                )
+        );
+
+        botao.setPreferredSize(
+                new Dimension(
+                        36,
+                        36
+                )
+        );
+
+        botao.setMinimumSize(
+                new Dimension(
+                        8,
+                        8
+                )
+        );
 
         botao.setBackground(
                 corCelulaOculta
@@ -1883,19 +2983,9 @@ public class CampoMinadoView extends JFrame {
                 corTextoPrincipal
         );
 
-        botao.setMargin(
-                new Insets(0, 0, 0, 0)
-        );
-
         botao.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(
-                                corBorda,
-                                1
-                        ),
-                        BorderFactory.createEmptyBorder(
-                                2, 2, 2, 2
-                        )
+                BorderFactory.createLineBorder(
+                        corBordaOculta
                 )
         );
 
@@ -1906,22 +2996,39 @@ public class CampoMinadoView extends JFrame {
         );
 
         botao.putClientProperty(
+                "linha",
+                linha
+        );
+
+        botao.putClientProperty(
+                "coluna",
+                coluna
+        );
+
+        botao.putClientProperty(
                 "revelada",
-                Boolean.FALSE
+                false
+        );
+
+        botao.putClientProperty(
+                "marcada",
+                false
         );
 
         botao.addMouseListener(
                 new MouseAdapter() {
-
                     @Override
                     public void mouseEntered(
-                            MouseEvent e) {
+                            MouseEvent evento
+                    ) {
+                        boolean revelada =
+                                Boolean.TRUE.equals(
+                                        botao.getClientProperty(
+                                                "revelada"
+                                        )
+                                );
 
-                        if (Boolean.FALSE.equals(
-                                botao.getClientProperty(
-                                        "revelada"
-                                ))) {
-
+                        if (!revelada) {
                             botao.setBackground(
                                     corCelulaOcultaHover
                             );
@@ -1930,13 +3037,16 @@ public class CampoMinadoView extends JFrame {
 
                     @Override
                     public void mouseExited(
-                            MouseEvent e) {
+                            MouseEvent evento
+                    ) {
+                        boolean revelada =
+                                Boolean.TRUE.equals(
+                                        botao.getClientProperty(
+                                                "revelada"
+                                        )
+                                );
 
-                        if (Boolean.FALSE.equals(
-                                botao.getClientProperty(
-                                        "revelada"
-                                ))) {
-
+                        if (!revelada) {
                             botao.setBackground(
                                     corCelulaOculta
                             );
@@ -1945,31 +3055,45 @@ public class CampoMinadoView extends JFrame {
 
                     @Override
                     public void mouseReleased(
-                            MouseEvent evento) {
-
+                            MouseEvent evento
+                    ) {
                         if (ouvinte == null) {
                             return;
                         }
 
-                        boolean botaoDireito =
-                                SwingUtilities
-                                        .isRightMouseButton(
-                                                evento
-                                        )
-                                        || evento.getButton()
-                                        == MouseEvent.BUTTON3;
+                        if (SwingUtilities.isRightMouseButton(
+                                evento
+                        )) {
+                            boolean marcada =
+                                    Boolean.TRUE.equals(
+                                            botao.getClientProperty(
+                                                    "marcada"
+                                            )
+                                    );
 
-                        if (botaoDireito) {
-                            ouvinte.aoMarcarCelula(
-                                    linha,
-                                    coluna
-                            );
+                            /*
+                             * Uma bandeira já existente sempre pode ser retirada.
+                             * Uma nova bandeira somente é encaminhada ao Controller
+                             * quando ainda existe pelo menos uma bandeira disponível.
+                             *
+                             * Essa proteção é feita antes de chamar o Controller,
+                             * evitando que a interação normal da interface produza
+                             * uma contagem negativa de bandeiras.
+                             */
+                            if (marcada
+                                    || podeAdicionarBandeira()) {
+
+                                ouvinte.aoMarcarCelula(
+                                        linha,
+                                        coluna
+                                );
+                            }
+
                         } else if (
-                                SwingUtilities
-                                        .isLeftMouseButton(
-                                                evento
-                                        )) {
-
+                                SwingUtilities.isLeftMouseButton(
+                                        evento
+                                )
+                        ) {
                             ouvinte.aoRevelarCelula(
                                     linha,
                                     coluna
@@ -1982,32 +3106,140 @@ public class CampoMinadoView extends JFrame {
         return botao;
     }
 
+    /**
+     * Verifica se ainda existe espaço para colocar uma nova bandeira.
+     *
+     * O valor exibido pelo Controller é usado como fonte de verdade visual.
+     * Quando chega a zero, novas bandeiras são ignoradas.
+     *
+     * Uma bandeira já existente não passa por este método, pois precisa
+     * continuar podendo ser retirada mesmo quando o contador estiver em zero.
+     */
+    private boolean podeAdicionarBandeira() {
+        if (lblMinasRestantes == null) {
+            return true;
+        }
+
+        try {
+            int minasRestantes =
+                    Integer.parseInt(
+                            lblMinasRestantes
+                                    .getText()
+                                    .trim()
+                    );
+
+            return minasRestantes > 0;
+
+        } catch (NumberFormatException ex) {
+            return false;
+        }
+    }
+
     // ================================================================
-    // ATUALIZAÇÕES CHAMADAS PELO CONTROLLER
+    // Atualização das células
     // ================================================================
 
     public void atualizarCelula(
             int linha,
             int coluna,
-            LeituraTabuleiro leitura) {
+            LeituraTabuleiro leitura
+    ) {
+        if (painelTabuleiro == null
+                || leitura == null) {
+            return;
+        }
+
+        int indice =
+                linha
+                        * painelQuantidadeColunas()
+                        + coluna;
+
+        if (indice < 0
+                || indice >= painelTabuleiro
+                        .getComponentCount()) {
+            return;
+        }
+
+        Component componente =
+                painelTabuleiro
+                        .getComponent(
+                                indice
+                        );
+
+        if (!(componente instanceof JButton)) {
+            return;
+        }
 
         JButton botao =
-                botoes[linha][coluna];
+                (JButton) componente;
 
-        botao.putClientProperty(
-                "revelada",
+        boolean revelada =
                 leitura.isRevelada(
                         linha,
                         coluna
-                )
+                );
+
+        boolean marcada =
+                leitura.isMarcada(
+                        linha,
+                        coluna
+                );
+
+        boolean minada =
+                leitura.isMinada(
+                        linha,
+                        coluna
+                );
+
+        int minasVizinhas =
+                leitura.getMinasVizinhas(
+                        linha,
+                        coluna
+                );
+
+        botao.putClientProperty(
+                "revelada",
+                revelada
         );
 
-        if (leitura.isMarcada(
-                linha,
-                coluna)) {
+        botao.putClientProperty(
+                "marcada",
+                marcada
+        );
 
+        if (minada && revelada) {
+            botao.setText(
+                    EMOJI_BOMBA
+            );
+
+            botao.setFont(
+                    fonteCelula
+            );
+
+            botao.setForeground(
+                    corMina
+            );
+
+            botao.setBackground(
+                    corMinaFundo
+            );
+
+            botao.setBorder(
+                    BorderFactory.createLineBorder(
+                            corMina
+                    )
+            );
+
+            return;
+        }
+
+        if (marcada) {
             botao.setText(
                     EMOJI_BANDEIRA
+            );
+
+            botao.setFont(
+                    fonteCelula
             );
 
             botao.setForeground(
@@ -2019,144 +3251,186 @@ public class CampoMinadoView extends JFrame {
             );
 
             botao.setBorder(
-                    BorderFactory.createCompoundBorder(
-                            BorderFactory.createLineBorder(
-                                    corBandeira,
-                                    1
-                            ),
-                            BorderFactory.createEmptyBorder(
-                                    2, 2, 2, 2
-                            )
+                    BorderFactory.createLineBorder(
+                            corBandeira
                     )
             );
 
             return;
         }
 
-        if (!leitura.isRevelada(
-                linha,
-                coluna)) {
+        if (!revelada) {
+            botao.setText(
+                    ""
+            );
 
-            botao.setText("");
+            botao.setFont(
+                    fonteCelula
+            );
+
+            botao.setForeground(
+                    corTextoPrincipal
+            );
+
             botao.setBackground(
                     corCelulaOculta
             );
 
             botao.setBorder(
-                    BorderFactory.createCompoundBorder(
-                            BorderFactory.createLineBorder(
-                                    corBordaOculta,
-                                    1
-                            ),
-                            BorderFactory.createEmptyBorder(
-                                    2, 2, 2, 2
-                            )
+                    BorderFactory.createLineBorder(
+                            corBordaOculta
                     )
             );
 
             return;
         }
 
-        if (leitura.isMinada(
-                linha,
-                coluna)) {
+        botao.setBackground(
+                corCelulaRevelada
+        );
 
+        botao.setBorder(
+                BorderFactory.createLineBorder(
+                        corBordaRevelada
+                )
+        );
+
+        if (minasVizinhas > 0) {
             botao.setText(
-                    EMOJI_BOMBA
-            );
-
-            botao.setBackground(
-                    corMinaFundo
-            );
-
-            botao.setForeground(
-                    corMina
-            );
-
-            botao.setBorder(
-                    BorderFactory.createCompoundBorder(
-                            BorderFactory.createLineBorder(
-                                    corMina,
-                                    1
-                            ),
-                            BorderFactory.createEmptyBorder(
-                                    2, 2, 2, 2
-                            )
+                    String.valueOf(
+                            minasVizinhas
                     )
             );
 
-        } else {
-            botao.setBackground(
-                    corCelulaRevelada
-            );
+            int indiceCor =
+                    Math.min(
+                            minasVizinhas,
+                            coresNumeros.length
+                    ) - 1;
 
-            botao.setBorder(
-                    BorderFactory.createCompoundBorder(
-                            BorderFactory.createLineBorder(
-                                    corBordaRevelada,
-                                    1
-                            ),
-                            BorderFactory.createEmptyBorder(
-                                    2, 2, 2, 2
-                            )
-                    )
-            );
-
-            int minasVizinhas =
-                    leitura.getMinasVizinhas(
-                            linha,
-                            coluna
-                    );
-
-            if (minasVizinhas > 0) {
-                botao.setText(
-                        String.valueOf(
-                                minasVizinhas
-                        )
+            if (indiceCor >= 0) {
+                botao.setForeground(
+                        coresNumeros[
+                                indiceCor
+                        ]
                 );
-
-                if (minasVizinhas
-                        < coresNumeros.length
-                        && coresNumeros[minasVizinhas]
-                        != null) {
-
-                    botao.setForeground(
-                            coresNumeros[
-                                    minasVizinhas
-                            ]
-                    );
-
-                } else {
-                    botao.setForeground(
-                            corTextoSobreRevelada
-                    );
-                }
-
             } else {
-                botao.setText("");
                 botao.setForeground(
                         corTextoSobreRevelada
                 );
             }
 
-            botao.setFont(
-                    fonteNumero
+        } else {
+            botao.setText(
+                    ""
+            );
+
+            botao.setForeground(
+                    corTextoSobreRevelada
             );
         }
     }
 
+    private int painelQuantidadeColunas() {
+        if (painelTabuleiro == null) {
+            return 1;
+        }
+
+        Object valor =
+                painelTabuleiro.getClientProperty(
+                        "colunas"
+                );
+
+        if (valor instanceof Integer) {
+            return Math.max(
+                    1,
+                    (Integer) valor
+            );
+        }
+
+        int quantidade =
+                painelTabuleiro.getComponentCount();
+
+        if (quantidade <= 0) {
+            return 1;
+        }
+
+        for (Component componente :
+                painelTabuleiro.getComponents()) {
+
+            if (componente instanceof JButton) {
+                Object coluna =
+                        ((JButton) componente)
+                                .getClientProperty(
+                                        "coluna"
+                                );
+
+                if (coluna instanceof Integer) {
+                    int c =
+                            (Integer) coluna;
+
+                    int maior =
+                            c + 1;
+
+                    painelTabuleiro.putClientProperty(
+                            "colunas",
+                            maior
+                    );
+
+                    return maior;
+                }
+            }
+        }
+
+        return 1;
+    }
+
+    // ================================================================
+    // Estatísticas e tempo
+    // ================================================================
+
+    public void atualizarTempo(
+            String texto
+    ) {
+        if (lblTempo != null) {
+            lblTempo.setText(
+                    texto
+            );
+        }
+    }
+
+    /**
+     * Atualiza os indicadores de estatísticas recebidos diretamente do
+     * Controller. A assinatura possui exatamente os cinco parâmetros
+     * usados pelo {@code CampoMinadoController}.
+     */
     public void atualizarEstatisticas(
             int minasRestantes,
             int celulasReveladas,
             int totalCelulas,
             int jogadas,
-            int vidasRestantes) {
-
+            int vidasRestantes
+    ) {
         if (lblMinasRestantes != null) {
+            /*
+             * A View nunca exibe quantidade negativa de minas.
+             * O Controller calcula o valor real e, em condições normais,
+             * a proteção de bandeiras impede que ele fique negativo.
+             */
+            int minasRestantesExibidas =
+                    Math.max(
+                            0,
+                            minasRestantes
+                    );
+
             lblMinasRestantes.setText(
                     String.valueOf(
-                            minasRestantes
+                            minasRestantesExibidas
                     )
+            );
+
+            lblMinasRestantes.setForeground(
+                    corTextoPrincipal
             );
         }
 
@@ -2170,76 +3444,88 @@ public class CampoMinadoView extends JFrame {
 
         if (lblJogadas != null) {
             lblJogadas.setText(
-                    String.valueOf(jogadas)
-            );
-        }
-
-        if (lblVidas != null) {
-            lblVidas.setText(
                     String.valueOf(
-                            vidasRestantes
+                            jogadas
                     )
             );
         }
 
-        int progresso =
-                totalCelulas > 0
-                        ? (int) (
-                        (celulasReveladas
-                                * 100.0)
-                                / totalCelulas
-                )
-                        : 0;
+        if (lblVidas != null) {
+            int vidasExibidas =
+                    Math.max(
+                            0,
+                            vidasRestantes
+                    );
 
-        if (barraProgresso != null) {
-            barraProgresso.setValue(
-                    celulasReveladas
+            lblVidas.setText(
+                    String.valueOf(
+                            vidasExibidas
+                    )
             );
 
-            barraProgresso.setString(
-                    progresso + "%"
-            );
-
-            if (progresso < 30) {
-                barraProgresso.setForeground(
-                        new Color(220, 80, 80)
-                );
-            } else if (progresso < 70) {
-                barraProgresso.setForeground(
-                        new Color(220, 180, 60)
+            if (vidasExibidas == 0) {
+                lblVidas.setForeground(
+                        corMina
                 );
             } else {
-                barraProgresso.setForeground(
+                lblVidas.setForeground(
                         corVitoria
                 );
             }
         }
-    }
 
-    public void atualizarTempo(String texto) {
-        if (lblTempo != null) {
-            lblTempo.setText(texto);
+        if (barraProgresso != null) {
+            int progresso =
+                    totalCelulas > 0
+                            ? (int) (
+                            (celulasReveladas
+                                    * 100.0)
+                                    / totalCelulas
+                    )
+                            : 0;
+
+            progresso =
+                    Math.max(
+                            0,
+                            Math.min(
+                                    100,
+                                    progresso
+                            )
+                    );
+
+            barraProgresso.setValue(
+                    Math.min(
+                            celulasReveladas,
+                            Math.max(
+                                    1,
+                                    totalCelulas
+                            )
+                    )
+            );
+
+            barraProgresso.setMaximum(
+                    Math.max(
+                            1,
+                            totalCelulas
+                    )
+            );
+
+            barraProgresso.setString(
+                    progresso
+                            + "%"
+            );
         }
     }
 
-    public void mostrarVitoria() {
-        if (labelStatus != null) {
-            labelStatus.setText(
-                    EMOJI_TROFEU
-                            + " Você venceu!"
-            );
-
-            labelStatus.setForeground(
-                    corVitoria
-            );
-        }
-    }
+    // ================================================================
+    // Resultado da partida
+    // ================================================================
 
     public void mostrarDerrota() {
         if (labelStatus != null) {
             labelStatus.setText(
-                    EMOJI_EXPLOSAO
-                            + " Game Over!"
+                    EMOJI_BOMBA
+                            + " Game Over"
             );
 
             labelStatus.setForeground(
@@ -2248,49 +3534,70 @@ public class CampoMinadoView extends JFrame {
         }
     }
 
-    public void piscarFundoDeExplosao(
-            boolean ativo) {
+    public void mostrarVitoria() {
+        if (labelStatus != null) {
+            labelStatus.setText(
+                    "✓ Vitória!"
+            );
 
-        if (botoes == null) {
-            return;
+            labelStatus.setForeground(
+                    corVitoria
+            );
         }
+    }
 
-        Color fundo =
+    public void piscarFundoDeExplosao(
+            boolean ativo
+    ) {
+        Color cor =
                 ativo
                         ? corMinaFundo
-                        : corCelulaOculta;
+                        : corFundo;
 
-        for (int i = 0; i < botoes.length; i++) {
-            for (int j = 0; j < botoes[i].length; j++) {
-                if (!Boolean.TRUE.equals(
-                        botoes[i][j]
-                                .getClientProperty(
-                                        "revelada"
-                                ))) {
+        getContentPane().setBackground(
+                cor
+        );
 
-                    botoes[i][j].setBackground(
-                            fundo
-                    );
-                }
-            }
+        if (painelPrincipal != null) {
+            painelPrincipal.setBackground(
+                    cor
+            );
         }
+
+        repaint();
     }
 
     public void marcarMinaExplodida(
             int linha,
-            int coluna) {
+            int coluna
+    ) {
+        if (painelTabuleiro == null) {
+            return;
+        }
 
-        if (botoes == null) {
+        int indice =
+                linha
+                        * painelQuantidadeColunas()
+                        + coluna;
+
+        if (indice < 0
+                || indice >= painelTabuleiro
+                        .getComponentCount()) {
+            return;
+        }
+
+        Component componente =
+                painelTabuleiro
+                        .getComponent(
+                                indice
+                        );
+
+        if (!(componente instanceof JButton)) {
             return;
         }
 
         JButton botao =
-                botoes[linha][coluna];
-
-        botao.putClientProperty(
-                "revelada",
-                Boolean.TRUE
-        );
+                (JButton) componente;
 
         botao.setText(
                 EMOJI_BOMBA
@@ -2305,35 +3612,61 @@ public class CampoMinadoView extends JFrame {
         );
 
         botao.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(
-                                corMina,
-                                1
-                        ),
-                        BorderFactory.createEmptyBorder(
-                                2, 2, 2, 2
-                        )
+                BorderFactory.createLineBorder(
+                        corMina
                 )
+        );
+
+        botao.putClientProperty(
+                "revelada",
+                true
         );
     }
 
     public void destacarCelulaVencedora(
             int linha,
-            int coluna) {
+            int coluna
+    ) {
+        if (painelTabuleiro == null) {
+            return;
+        }
 
-        if (botoes == null) {
+        int indice =
+                linha
+                        * painelQuantidadeColunas()
+                        + coluna;
+
+        if (indice < 0
+                || indice >= painelTabuleiro
+                        .getComponentCount()) {
+            return;
+        }
+
+        Component componente =
+                painelTabuleiro
+                        .getComponent(
+                                indice
+                        );
+
+        if (!(componente instanceof JButton)) {
             return;
         }
 
         JButton botao =
-                botoes[linha][coluna];
+                (JButton) componente;
 
         botao.setBackground(
                 corVitoria
         );
 
         botao.setForeground(
-                Color.WHITE
+                corFundo
+        );
+
+        botao.setBorder(
+                BorderFactory.createLineBorder(
+                        corVitoria
+                )
         );
     }
 }

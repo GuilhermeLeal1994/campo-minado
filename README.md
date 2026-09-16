@@ -1,64 +1,147 @@
 # Campo Minado
+Projeto de uma versão do jogo Campo Minado em Java, com interface gráfica desenvolvida em Swing e arquitetura MVC (Model-View-Controller).
 
-Este projeto é uma versão em Java do jogo Campo Minado com interface gráfica Swing e arquitetura MVC, desenvolvido com foco em boas práticas, modularidade e expansibilidade.
+O projeto foi desenvolvido de forma incremental, com foco em organização de código, separação de responsabilidades, testes, interação gráfica e expansão das funcionalidades do jogo.
 
 ## Estrutura do projeto
-
-- `src/main` - classes principais de execução.
-  - `JogoCampoMinadoGUI.java` - entrada do jogo em modo gráfico.
-  - `JogoCampoMinado.java` - alternativa de execução em console.
-- `src/controller` - controlador MVC.
-  - `CampoMinadoController.java` - lógica de jogo e sincronização entre View e Model.
-  - `AcoesJogador.java` - interface de ações disparadas pela View.
-- `src/view` - camada de interface gráfica.
-  - `CampoMinadoView.java` - tela do jogo, tutorial, temas visuais, contadores e estatísticas.
-- `src/model` - modelo de domínio do jogo.
-  - `Tabuleiro.java` - lógica do tabuleiro, minas, cálculo dinâmico de vidas, revelação e vitória.
-  - `Celula.java` - estado de cada célula do tabuleiro.
-  - `LeituraTabuleiro.java` - interface de leitura do estado do tabuleiro.
-- `src/test` - testes unitários.
-  - `CampoMinadoTest.java`
+```text
+src/
+├── main/
+│   ├── JogoCampoMinadoGUI.java
+│   └── JogoCampoMinado.java
+├── controller/
+│   ├── CampoMinadoController.java
+│   └── AcoesJogador.java
+├── view/
+│   └── CampoMinadoView.java
+├── model/
+│   ├── Tabuleiro.java
+│   ├── Celula.java
+│   └── LeituraTabuleiro.java
+└── test/
+    └── CampoMinadoTest.java
+```
 
 ## Funcionalidades
 
-- **Sistema de Vidas Dinâmico por Dificuldade:** O erro em minas consome vidas antes de encerrar o jogo, escalonando conforme o desafio:
-  - *Iniciante (9x9 - 10 minas):* 2 vidas
-  - *Intermediário (16x16 - 40 minas):* 3 vidas
-  - *Avançado (16x30 - 99 minas):* 5 vidas
-- Escolha de dificuldade: Iniciante, Intermediário e Avançado.
-- Estatísticas atualizadas em tempo real: tempo, minas restantes, células reveladas, jogadas e vidas restantes.
-- Temas visuais avançados na View (Cyberpunk Neon, Terminal Retro e variantes de modo claro/escuro), mantendo a integridade da arquitetura MVC.
-- Tutorial integrado com instruções de jogo.
-- Tempo limite selecionável (até 5 minutos) com cronômetro regressivo e derrota automática se estourar o prazo.
-- Arquitetura MVC limpa e rigorosamente organizada em pacotes.
+**Sistema de vidas por dificuldade:**
+• Iniciante: 9x9, 10 minas, 2 vidas.
+• Intermediário: 16x16, 40 minas, 3 vidas.
+• Avançado: 16x30, 99 minas, 5 vidas.
+• Ao revelar uma mina, o jogador perde uma vida.
+• A partida termina quando todas as vidas são consumidas.
+
+**Sistema de revelação:**
+• Revelação individual de células.
+• Revelação automática em cascata.
+• Contagem de minas vizinhas.
+• Proteção contra revelação de células já abertas.
+• Proteção contra revelação de células marcadas.
+
+**Sistema de bandeiras:**
+• Marcação e desmarcação com o botão direito.
+• Limite de bandeiras baseado na quantidade de minas.
+• Não é possível adicionar novas bandeiras quando o limite é atingido.
+• Bandeiras existentes podem ser removidas mesmo com zero minas restantes.
+• O contador de minas restantes nunca fica negativo.
+
+**Estatísticas em tempo real:**
+• Tempo decorrido.
+• Tempo limite.
+• Minas restantes.
+• Células reveladas.
+• Número de jogadas.
+• Vidas restantes.
+• Clicar novamente em uma célula já revelada não contabiliza uma nova jogada.
+
+**Seleção de dificuldade:** Iniciante, Intermediário e Avançado.
+
+**Cronômetro e limite de tempo:** Sem limite, 30, 60, 120 ou 300 segundos, com derrota automática ao esgotar o tempo.
+
+##Interface gráfica
+
+**Temas visuais:**
+• Cyberpunk Neon.
+• Terminal Retro.
+• Variantes claras dos temas.
+
+**Adaptação da interface:**
+• Redimensionamento proporcional dos componentes.
+• Tabuleiro ajustado ao espaço disponível.
+• Remoção de barras de rolagem indesejadas.
+• Grade adaptada à dificuldade.
+• Correção do mapeamento entre posição visual e coordenadas do Model.
+
+**Modo tela cheia:** botão visível e atalho F11.
+
+Tutorial integrado com instruções sobre revelação, bandeiras, vidas e condições de vitória e derrota.
+
+## Arquitetura MVC
+
+Model — Tabuleiro, Celula e LeituraTabuleiro. Responsável pelas regras e pelo estado do jogo.
+
+View — CampoMinadoView. Responsável pela interface gráfica, tutorial, estatísticas, temas, redimensionamento e tela cheia.
+
+Controller — CampoMinadoController e AcoesJogador. Responsável pela comunicação entre View e Model, ações do jogador, dificuldade, estatísticas, cronômetro e estado da partida.
+
+## Evolução do projeto
+
+Etapa 1 — Sistema de vidas:
+• Inclusão de vidas no Tabuleiro.
+• Definição das vidas conforme a dificuldade.
+• Perda de vida ao atingir uma mina.
+• Derrota somente quando as vidas chegam a zero.
+• Exibição das vidas na interface.
+• Integração entre Model, Controller e View.
+
+Etapa 2 — Interface e interação:
+• Temas visuais e variantes claras/escuro.
+• Detecção inicial da aparência do sistema.
+• Limite estrito de bandeiras.
+• Remoção de bandeiras com contador em zero.
+• Contador de minas sem valores negativos.
+• Redimensionamento do tabuleiro e ajuste proporcional.
+• Modo tela cheia, botão de tela cheia e atalho F11.
+• Correção do mapeamento das células.
+• Cliques em células já reveladas não aumentam o contador de jogadas.
+• Atualização das estatísticas durante a partida.
 
 ## Compilação
 
-Execute no terminal a partir da pasta do projeto:
+A partir da pasta raiz do projeto:
 
 ```powershell
-javac src\main\*.java src\controller\*.java src\view\*.java src\model\*.java
+javac -d bin src\main\*.java src\controller\*.java src\view\*.java src\model\*.java
 ```
 
 ## Execução
 
-Para iniciar a interface gráfica:
-
-```powershell
+Interface gráfica:
+```
 java -cp bin main.JogoCampoMinadoGUI
 ```
-
-Para executar a versão em console:
-
-```powershell
+Versão em console:
+```
 java -cp bin main.JogoCampoMinado
 ```
 
 ## Testes
 
-Se você tiver o JUnit configurado, execute os testes em `src/test/CampoMinadoTest.java` com seu ambiente de testes Java.
+Os testes unitários estão localizados em src/test/CampoMinadoTest.java. A execução depende da configuração do JUnit no ambiente de desenvolvimento.
+
+## Tecnologias
+
+• Java
+• Java Swing
+• JUnit
+• Arquitetura MVC
+• Git / GitHub
 
 ## Observações
 
-- A interface gráfica usa Swing e respeita componentes personalizados e temas visuais adaptativos.
-- Certifique-se de compilar todos os arquivos direcionando para a pasta bin (-d bin) antes de executar.
+• A interface gráfica utiliza Swing.
+• As regras do jogo permanecem concentradas no Model.
+• O Controller coordena as ações e a comunicação entre as camadas.
+• A View é responsável pela apresentação e interação visual.
+• As alterações visuais não modificam diretamente as regras do jogo.
+• Antes de executar, compile os arquivos direcionando os .class para a pasta bin.
