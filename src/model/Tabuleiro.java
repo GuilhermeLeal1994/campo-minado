@@ -1,5 +1,6 @@
 package model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -13,7 +14,9 @@ import java.util.Random;
  * para que a View possa consultar o estado do jogo sem depender da API
  * completa (mutável) desta classe.
  */
-public class Tabuleiro implements LeituraTabuleiro {
+public class Tabuleiro implements LeituraTabuleiro, Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private final int linhas;
     private final int colunas;
@@ -37,11 +40,7 @@ public class Tabuleiro implements LeituraTabuleiro {
         if (linhas <= 0 || colunas <= 0) {
             throw new IllegalArgumentException("Linhas e colunas devem ser maiores que zero.");
         }
-
-        long totalCelulas =
-                (long) linhas * colunas;
-
-        if (numMinas < 0 || numMinas >= totalCelulas) {
+        if (numMinas < 0 || numMinas >= (long) linhas * colunas) {
             throw new IllegalArgumentException("Número de minas inválido para esse tabuleiro.");
         }
 
@@ -76,10 +75,7 @@ public class Tabuleiro implements LeituraTabuleiro {
             throw new IllegalArgumentException("As posições das minas não podem ser nulas.");
         }
 
-        long totalCelulas =
-                (long) linhas * colunas;
-
-        if (posicoesMinas.length >= totalCelulas) {
+        if (posicoesMinas.length >= linhas * colunas) {
             throw new IllegalArgumentException("Número de minas inválido para esse tabuleiro.");
         }
 

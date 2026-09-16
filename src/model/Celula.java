@@ -1,5 +1,7 @@
 package model;
 
+import java.io.Serializable;
+
 /**
  * Representa uma única célula do tabuleiro de Campo Minado.
  * <p>
@@ -8,7 +10,9 @@ package model;
  * minasVizinhas) é privado; nenhuma classe externa altera esses valores
  * diretamente, apenas através dos métodos públicos abaixo.
  */
-public class Celula {
+public class Celula implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private boolean minada;
     private boolean revelada;

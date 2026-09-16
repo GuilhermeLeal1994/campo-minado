@@ -230,6 +230,43 @@ Responsável pela comunicação entre View e Model, ações do jogador, configur
   - **Controller:** recebe a configuração e inicia a partida.
   - **Model:** cria e mantém o estado do tabuleiro personalizado.
 
+## Fase 5 — Salvar e Continuar Partida
+
+Nesta última fase foi implementado o sistema de salvamento e retomada de partidas em andamento.
+
+### Funcionalidades implementadas
+
+- Salvamento da partida atual em um arquivo `partida_salva.dat`.
+- Opção **Salvar jogo** durante uma partida.
+- Opção **Continuar jogo** na tela inicial quando existe uma partida salva.
+- Restauração do estado completo da partida.
+- Continuação do cronômetro a partir do tempo salvo.
+- Preservação das vidas restantes.
+- Preservação das células reveladas.
+- Preservação das bandeiras colocadas.
+- Preservação da quantidade de jogadas.
+- Preservação das dicas utilizadas.
+- Preservação da dificuldade e das configurações da partida.
+- Exclusão do salvamento quando a partida é finalizada.
+- Tratamento de arquivos de salvamento inválidos ou corrompidos.
+
+### Estrutura do salvamento
+
+Para realizar o salvamento foi criada a classe `PartidaSalva`, responsável por armazenar o estado necessário para reconstruir uma partida posteriormente.
+
+A classe `SalvamentoPartida` é responsável pelas operações de:
+
+- salvar a partida;
+- carregar uma partida existente;
+- verificar se existe uma partida salva;
+- excluir o arquivo de salvamento.
+
+O arquivo utilizado pelo sistema é:
+
+```text
+partida_salva.dat
+```
+
 ## Compilação
 
 A partir da pasta raiz do projeto:
