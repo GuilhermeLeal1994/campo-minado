@@ -51,11 +51,28 @@ public class CampoMinadoController implements AcoesJogador {
         this.jogoIniciado = false;
 
         pararTimer();
+
         view.aplicarTemaSelecionado();
 
-        this.limiteSegundos = view.getTempoLimiteSegundosSelecionado();
-        view.iniciarTelaDeJogo(linhas, colunas, totalMinas, totalCelulas, limiteSegundos);
-        view.atualizarEstatisticas(totalMinas, 0, totalCelulas, 0);
+        this.limiteSegundos =
+                view.getTempoLimiteSegundosSelecionado();
+
+        view.iniciarTelaDeJogo(
+                linhas,
+                colunas,
+                totalMinas,
+                totalCelulas,
+                limiteSegundos,
+                tabuleiro.getVidasRestantes()
+        );
+
+        view.atualizarEstatisticas(
+                totalMinas,
+                0,
+                totalCelulas,
+                0,
+                tabuleiro.getVidasRestantes()
+        );
     }
 
     @Override
@@ -66,17 +83,24 @@ public class CampoMinadoController implements AcoesJogador {
 
     @Override
     public void aoMarcarCelula(int linha, int coluna) {
-        if (tabuleiro.isJogoEncerrado()) {
+        if (tabuleiro == null || tabuleiro.isJogoEncerrado()) {
             return;
         }
+
         tabuleiro.alternarMarcacao(linha, coluna);
-        view.atualizarCelula(linha, coluna, tabuleiro);
+
+        view.atualizarCelula(
+                linha,
+                coluna,
+                tabuleiro
+        );
+
         atualizarEstatisticasNaView();
     }
 
     @Override
     public void aoRevelarCelula(int linha, int coluna) {
-        if (tabuleiro.isJogoEncerrado()) {
+        if (tabuleiro == null || tabuleiro.isJogoEncerrado()) {
             return;
         }
 
@@ -86,17 +110,37 @@ public class CampoMinadoController implements AcoesJogador {
             iniciarTimer();
         }
 
-        if (limiteSegundos > 0 && obterSegundosPassados() >= limiteSegundos) {
+        if (limiteSegundos > 0
+                && obterSegundosPassados() >= limiteSegundos) {
             encerrarPorTempo();
             return;
         }
 
         jogadas++;
-        List<int[]> reveladas = tabuleiro.revelar(linha, coluna);
-        celulasReveladas = contarCelulasReveladas();
 
-        int atraso = reveladas.size() > 80 ? 3 : (reveladas.size() > 25 ? 8 : 18);
-        animarRevelacao(reveladas, 0, atraso);
+        /*
+         * O Model agora é responsável por decidir o que acontece quando
+         * uma mina é clicada. O Controller apenas aplica a jogada e
+         * aguarda o estado atualizado do Model.
+         *
+         * Se ainda houver vidas, isJogoEncerrado() continuará falso.
+         * Portanto, a partida seguirá normalmente.
+         */
+        List<int[]> reveladas =
+                tabuleiro.revelar(linha, coluna);
+
+        celulasReveladas =
+                contarCelulasReveladas();
+
+        int atraso = reveladas.size() > 80
+                ? 3
+                : (reveladas.size() > 25 ? 8 : 18);
+
+        animarRevelacao(
+                reveladas,
+                0,
+                atraso
+        );
     }
 
     // ================================================================
@@ -105,18 +149,22 @@ public class CampoMinadoController implements AcoesJogador {
 
     private int contarCelulasReveladas() {
         int count = 0;
+
         for (int i = 0; i < tabuleiro.getLinhas(); i++) {
             for (int j = 0; j < tabuleiro.getColunas(); j++) {
-                if (tabuleiro.isRevelada(i, j) && !tabuleiro.isMinada(i, j)) {
+                if (tabuleiro.isRevelada(i, j)
+                        && !tabuleiro.isMinada(i, j)) {
                     count++;
                 }
             }
         }
+
         return count;
     }
 
     private int contarMarcadas() {
         int count = 0;
+
         for (int i = 0; i < tabuleiro.getLinhas(); i++) {
             for (int j = 0; j < tabuleiro.getColunas(); j++) {
                 if (tabuleiro.isMarcada(i, j)) {
@@ -124,12 +172,21 @@ public class CampoMinadoController implements AcoesJogador {
                 }
             }
         }
+
         return count;
     }
 
     private void atualizarEstatisticasNaView() {
-        int restantes = totalMinas - contarMarcadas();
-        view.atualizarEstatisticas(restantes, celulasReveladas, totalCelulas, jogadas);
+        int restantes =
+                totalMinas - contarMarcadas();
+
+        view.atualizarEstatisticas(
+                restantes,
+                celulasReveladas,
+                totalCelulas,
+                jogadas,
+                tabuleiro.getVidasRestantes()
+        );
     }
 
     // ================================================================
@@ -137,7 +194,11 @@ public class CampoMinadoController implements AcoesJogador {
     // ================================================================
 
     private void iniciarTimer() {
-        timerJogo = new Timer(1000, e -> atualizarTempo());
+        timerJogo = new Timer(
+                1000,
+                e -> atualizarTempo()
+        );
+
         timerJogo.start();
     }
 
@@ -152,25 +213,53 @@ public class CampoMinadoController implements AcoesJogador {
     }
 
     private void atualizarTempo() {
-        long segundosPassados = obterSegundosPassados();
+        long segundosPassados =
+                obterSegundosPassados();
+
         if (limiteSegundos > 0) {
-            long restantes = Math.max(0, limiteSegundos - segundosPassados);
-            view.atualizarTempo(String.format("-%02d:%02d", restantes / 60, restantes % 60));
+            long restantes =
+                    Math.max(
+                            0,
+                            limiteSegundos - segundosPassados
+                    );
+
+            view.atualizarTempo(
+                    String.format(
+                            "-%02d:%02d",
+                            restantes / 60,
+                            restantes % 60
+                    )
+            );
+
             if (restantes <= 0) {
                 encerrarPorTempo();
                 return;
             }
         } else {
-            view.atualizarTempo(String.format("%02d:%02d", segundosPassados / 60, segundosPassados % 60));
+            view.atualizarTempo(
+                    String.format(
+                            "%02d:%02d",
+                            segundosPassados / 60,
+                            segundosPassados % 60
+                    )
+            );
         }
     }
 
     private void encerrarPorTempo() {
         pararTimer();
-        if (tabuleiro != null && !tabuleiro.isJogoEncerrado()) {
-            tabuleiro = new Tabuleiro(tabuleiro.getLinhas(), tabuleiro.getColunas(), tabuleiro.getNumMinas());
+
+        if (tabuleiro != null
+                && !tabuleiro.isJogoEncerrado()) {
+            tabuleiro = new Tabuleiro(
+                    tabuleiro.getLinhas(),
+                    tabuleiro.getColunas(),
+                    tabuleiro.getNumMinas()
+            );
+
             // Não reiniciamos o tabuleiro; apenas exibimos derrota devido ao tempo.
         }
+
         view.mostrarDerrota();
         labelStatusTempoEsgotado();
     }
@@ -180,18 +269,37 @@ public class CampoMinadoController implements AcoesJogador {
     }
 
     // ================================================================
-    // Animações (o Controller decide o ritmo; a View só desenha um passo)
+    // Animações
     // ================================================================
 
-    private void animarRevelacao(List<int[]> celulas, int indice, int atraso) {
+    private void animarRevelacao(
+            List<int[]> celulas,
+            int indice,
+            int atraso) {
+
         if (indice >= celulas.size()) {
             finalizarJogada();
             return;
         }
-        int[] posicao = celulas.get(indice);
-        view.atualizarCelula(posicao[0], posicao[1], tabuleiro);
 
-        Timer timer = new Timer(atraso, e -> animarRevelacao(celulas, indice + 1, atraso));
+        int[] posicao =
+                celulas.get(indice);
+
+        view.atualizarCelula(
+                posicao[0],
+                posicao[1],
+                tabuleiro
+        );
+
+        Timer timer = new Timer(
+                atraso,
+                e -> animarRevelacao(
+                        celulas,
+                        indice + 1,
+                        atraso
+                )
+        );
+
         timer.setRepeats(false);
         timer.start();
     }
@@ -199,6 +307,11 @@ public class CampoMinadoController implements AcoesJogador {
     private void finalizarJogada() {
         atualizarEstatisticasNaView();
 
+        /*
+         * Se o jogador acertou uma mina mas ainda possui vidas,
+         * o Model mantém jogoEncerrado como false e chegamos aqui.
+         * Nesse caso, simplesmente retornamos e a partida continua.
+         */
         if (!tabuleiro.isJogoEncerrado()) {
             return;
         }
@@ -217,62 +330,121 @@ public class CampoMinadoController implements AcoesJogador {
     private void animarExplosao() {
         Timer piscar = new Timer(100, null);
         int[] contador = {0};
+
         piscar.addActionListener(e -> {
             contador[0]++;
-            view.piscarFundoDeExplosao(contador[0] % 2 == 1);
+
+            view.piscarFundoDeExplosao(
+                    contador[0] % 2 == 1
+            );
+
             if (contador[0] >= 6) {
                 piscar.stop();
+
                 view.piscarFundoDeExplosao(false);
                 revelarMinasComAnimacao();
             }
         });
+
         piscar.start();
     }
 
     private void revelarMinasComAnimacao() {
-        List<int[]> minasNaoReveladas = new java.util.ArrayList<>();
+        List<int[]> minasNaoReveladas =
+                new java.util.ArrayList<>();
+
         for (int i = 0; i < tabuleiro.getLinhas(); i++) {
             for (int j = 0; j < tabuleiro.getColunas(); j++) {
-                if (tabuleiro.isMinada(i, j) && !tabuleiro.isRevelada(i, j)) {
-                    minasNaoReveladas.add(new int[]{i, j});
+                if (tabuleiro.isMinada(i, j)
+                        && !tabuleiro.isRevelada(i, j)) {
+
+                    minasNaoReveladas.add(
+                            new int[]{i, j}
+                    );
                 }
             }
         }
-        revelarMinasPasso(minasNaoReveladas, 0);
+
+        revelarMinasPasso(
+                minasNaoReveladas,
+                0
+        );
     }
 
-    private void revelarMinasPasso(List<int[]> minas, int indice) {
+    private void revelarMinasPasso(
+            List<int[]> minas,
+            int indice) {
+
         if (indice >= minas.size()) {
             return;
         }
-        int[] posicao = minas.get(indice);
-        view.marcarMinaExplodida(posicao[0], posicao[1]);
 
-        Timer timer = new Timer(80, e -> revelarMinasPasso(minas, indice + 1));
+        int[] posicao =
+                minas.get(indice);
+
+        view.marcarMinaExplodida(
+                posicao[0],
+                posicao[1]
+        );
+
+        Timer timer = new Timer(
+                80,
+                e -> revelarMinasPasso(
+                        minas,
+                        indice + 1
+                )
+        );
+
         timer.setRepeats(false);
         timer.start();
     }
 
     private void animarVitoria() {
-        List<int[]> celulasSeguras = new java.util.ArrayList<>();
+        List<int[]> celulasSeguras =
+                new java.util.ArrayList<>();
+
         for (int i = 0; i < tabuleiro.getLinhas(); i++) {
             for (int j = 0; j < tabuleiro.getColunas(); j++) {
-                if (tabuleiro.isRevelada(i, j) && !tabuleiro.isMinada(i, j)) {
-                    celulasSeguras.add(new int[]{i, j});
+                if (tabuleiro.isRevelada(i, j)
+                        && !tabuleiro.isMinada(i, j)) {
+
+                    celulasSeguras.add(
+                            new int[]{i, j}
+                    );
                 }
             }
         }
-        vitoriaPasso(celulasSeguras, 0);
+
+        vitoriaPasso(
+                celulasSeguras,
+                0
+        );
     }
 
-    private void vitoriaPasso(List<int[]> celulas, int indice) {
+    private void vitoriaPasso(
+            List<int[]> celulas,
+            int indice) {
+
         if (indice >= celulas.size()) {
             return;
         }
-        int[] atual = celulas.get(indice);
-        view.destacarCelulaVencedora(atual[0], atual[1]);
 
-        Timer timer = new Timer(8, e -> vitoriaPasso(celulas, indice + 1));
+        int[] atual =
+                celulas.get(indice);
+
+        view.destacarCelulaVencedora(
+                atual[0],
+                atual[1]
+        );
+
+        Timer timer = new Timer(
+                8,
+                e -> vitoriaPasso(
+                        celulas,
+                        indice + 1
+                )
+        );
+
         timer.setRepeats(false);
         timer.start();
     }
